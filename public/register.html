@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Registro | TranscreveAI - Escolha seu plano</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="/public/assets/robo.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Background decorativo */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -15%;
+            width: 60%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(91, 59, 140, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 50%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+            z-index: 2;
+            padding: 0;
+        }
+
+        /* ===== MAIN CARD ===== */
+        .main-card {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(91, 59, 140, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        /* ===== LADO ESQUERDO - PLANOS ===== */
+        .pricing-side {
+            background: linear-gradient(135deg, #5B3B8C 0%, #7C4A9E 100%);
+            padding: 36px 30px;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .pricing-side::-webkit-scrollbar {
+            display: none;
+            width: 0;
+        }
+
+        .pricing-side::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .pricing-side .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .pricing-side .logo span {
+            color: #FFD700;
+        }
+
+        .pricing-side .tagline {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .pricing-side h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .pricing-side .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .pricing-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 12px;
+        }
+
+        .pricing-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 16px;
+            border: 1.5px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .pricing-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+        }
+
+        .pricing-item.active {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: #FFD700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+
+        .pricing-item .plan-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .pricing-item .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pricing-item .plan-name .badge {
+            font-size: 8px;
+            font-weight: 700;
+            background: #FFD700;
+            color: #5B3B8C;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .pricing-item .plan-desc {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .pricing-item .plan-price {
+            font-size: 16px;
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .pricing-item .plan-price small {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.6;
+            display: block;
+        }
+
+        .pricing-item .plan-price.consult {
+            font-size: 13px;
+        }
+
+        .pricing-item .check-icon {
+            color: #FFD700;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .plan-features {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .plan-features h4 {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 6px;
+        }
+
+        .plan-features ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 12px;
+        }
+
+        .plan-features ul li {
+            font-size: 11px;
+            opacity: 0.8;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .plan-features ul li i {
+            color: #FFD700;
+            font-size: 9px;
+        }
+
+        /* ===== LADO DIREITO - REGISTRO ===== */
+        .register-side {
+            padding: 36px 32px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .register-side::-webkit-scrollbar {
+            display: none;
+            width: 0;
+        }
+
+        .register-side .header {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .register-side .header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 2px;
+        }
+
+        .register-side .header p {
+            color: #6c6c82;
+            font-size: 13px;
+        }
+
+        .register-side .header .plan-selected {
+            display: inline-block;
+            background: #f5f0ff;
+            color: #5B3B8C;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-top: 4px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #1a1a2e;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b0b0c0;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 9px 12px 9px 36px;
+            border: 1.5px solid #e0e0e8;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #fafaff;
+            color: #1a1a2e;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #5B3B8C;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(91, 59, 140, 0.08);
+        }
+
+        .input-wrapper input:focus ~ i {
+            color: #5B3B8C;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #b0b0c0;
+            font-size: 12px;
+        }
+
+        .password-strength {
+            margin-top: 3px;
+            height: 3px;
+            border-radius: 4px;
+            background: #e0e0e8;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .password-strength-text {
+            font-size: 10px;
+            color: #8a8aa0;
+            margin-top: 2px;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin: 2px 0 12px 0;
+            font-size: 12px;
+            color: #6c6c82;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #5B3B8C;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .terms-checkbox a {
+            color: #5B3B8C;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #5B3B8C 0%, #7C4A9E 100%);
+            border: none;
+            padding: 11px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(91, 59, 140, 0.25);
+        }
+
+        .login-link {
+            text-align: center;
+            font-size: 13px;
+            color: #6c6c82;
+        }
+
+        .login-link a {
+            color: #5B3B8C;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            text-align: center;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e8;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 12px;
+            position: relative;
+            color: #8a8aa0;
+            font-size: 11px;
+        }
+
+        .social-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .social-btn {
+            background: #fafaff;
+            border: 1.5px solid #e0e0e8;
+            padding: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 12px;
+            color: #1a1a2e;
+        }
+
+        .social-btn:hover {
+            border-color: #5B3B8C;
+            background: #f5f0ff;
+            transform: translateY(-1px);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .back-link a {
+            color: #8a8aa0;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .back-link a:hover {
+            color: #5B3B8C;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .main-card {
+                grid-template-columns: 1fr;
+                max-height: none;
+                border-radius: 32px;
+            }
+
+            .pricing-side {
+                padding: 28px 24px;
+                border-radius: 32px 32px 0 0;
+                max-height: 400px;
+            }
+
+            .pricing-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .plan-features ul {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .register-side {
+                padding: 28px 24px;
+            }
+
+            body {
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+                overflow-y: auto;
+            }
+
+            .main-card {
+                border-radius: 24px;
+                max-height: none;
+            }
+
+            .pricing-side {
+                padding: 20px 16px;
+                max-height: 350px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .plan-features ul {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .register-side {
+                padding: 20px 16px;
+            }
+
+            .register-side .header h2 {
+                font-size: 20px;
+            }
+
+            .social-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== TOAST ===== */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a2e;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid #5B3B8C;
+        }
+
+        .toast-message.success {
+            border-left-color: #22c55e;
+        }
+
+        .toast-message.error {
+            border-left-color: #ef4444;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-card">
+
+        <!-- ===== LADO ESQUERDO - PLANOS ===== -->
+        <div class="pricing-side">
+            <div>
+                <div class="logo">Transcreve<span>AI</span></div>
+                <div class="tagline">Escolha o plano ideal</div>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <h2>Planos transparentes</h2>
+                <div class="subtitle">Selecione um plano para continuar</div>
+
+                <div class="pricing-grid">
+                    <!-- Grátis -->
+                    <div class="pricing-item active" data-plan="free" onclick="selectPlan('free', this)">
+                        <div class="plan-info">
+                            <div class="plan-name">
+                                <span class="check-icon"><i class="fas fa-check-circle"></i></span>
+                                Grátis
+                            </div>
+                            <div class="plan-desc">Para começar</div>
+                        </div>
+                        <div class="plan-price">R$ 0<small>/mês</small></div>
+                    </div>
+
+                    <!-- Pro -->
+                    <div class="pricing-item" data-plan="pro" onclick="selectPlan('pro', this)">
+                        <div class="plan-info">
+                            <div class="plan-name">
+                                <span class="check-icon"><i class="fas fa-check-circle"></i></span>
+                                Pro
+                                <span class="badge">Popular</span>
+                            </div>
+                            <div class="plan-desc">Para profissionais</div>
+                        </div>
+                        <div class="plan-price">R$ 49<small>/mês</small></div>
+                    </div>
+
+                    <!-- Business -->
+                    <div class="pricing-item" data-plan="business" onclick="selectPlan('business', this)">
+                        <div class="plan-info">
+                            <div class="plan-name">
+                                <span class="check-icon"><i class="fas fa-check-circle"></i></span>
+                                Business
+                            </div>
+                            <div class="plan-desc">Para equipes</div>
+                        </div>
+                        <div class="plan-price">R$ 99<small>/mês</small></div>
+                    </div>
+
+                    <!-- Enterprise -->
+                    <div class="pricing-item" data-plan="enterprise" onclick="selectPlan('enterprise', this)">
+                        <div class="plan-info">
+                            <div class="plan-name">
+                                <span class="check-icon"><i class="fas fa-check-circle"></i></span>
+                                Enterprise
+                            </div>
+                            <div class="plan-desc">Para grandes empresas</div>
+                        </div>
+                        <div class="plan-price consult">Sob consulta</div>
+                    </div>
+                </div>
+
+                <!-- Features do plano selecionado -->
+                <div class="plan-features" id="planFeatures">
+                    <h4>O que inclui:</h4>
+                    <ul id="featuresList">
+                        <li><i class="fas fa-check"></i> 5 reuniões no total</li>
+                        <li><i class="fas fa-check"></i> Máx 30 min por reunião</li>
+                        <li><i class="fas fa-check"></i> Resumo básico com IA</li>
+                        <li><i class="fas fa-check"></i> Exportação em .txt</li>
+                        <li><i class="fas fa-check"></i> Sem cartão de crédito</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== LADO DIREITO - REGISTRO ===== -->
+        <div class="register-side">
+            <div class="header">
+                <h2>Crie sua conta</h2>
+                <p>Preencha os dados para começar</p>
+                <span class="plan-selected" id="planSelected">📋 Plano: Grátis</span>
+            </div>
+
+            <form id="registerForm">
+                <div class="input-group">
+                    <label>Nome completo</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="registerName" placeholder="Digite seu nome" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="registerEmail" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="password-strength-text" id="strengthText">Digite uma senha forte</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Confirmar senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerConfirmPassword" placeholder="Confirme sua senha" required>
+                    </div>
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="termsCheckbox" required>
+                    <label for="termsCheckbox">Li e concordo com os <a href="#" id="termsLink">Termos de Serviço</a> e <a href="#" id="privacyLink">Política de Privacidade</a></label>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-user-plus"></i> Criar conta
+                </button>
+            </form>
+
+            <div class="login-link">
+                Já tem uma conta? <a href="login.html">Faça login</a>
+            </div>
+
+
+            <div class="back-link">
+                <a href="#" id="backToHome">
+                    <i class="fas fa-arrow-left"></i> Voltar para o site
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // =========================
+    // SUPABASE CLIENT
+    // =========================
+    window.supabaseClient = window.supabase.createClient(
+      "https://zfmsjtijkxewrzzvrthc.supabase.co",
+      "SUA-ANON-KEY"
+    );
+
+    // =========================
+    // PLANOS E FEATURES
+    // =========================
+    const plans = {
+      free: {
+        name: 'Grátis',
+        features: [
+          '5 reuniões no total',
+          'Máx 30 min por reunião',
+          'Resumo básico com IA',
+          'Exportação em .txt',
+          'Sem cartão de crédito'
+        ]
+      },
+      pro: {
+        name: 'Pro',
+        features: [
+          '20 horas de transcrição/mês',
+          'Resumos inteligentes com IA',
+          'Histórico ilimitado',
+          'Exportação em .txt e .csv',
+          'Suporte por email'
+        ]
+      },
+      business: {
+        name: 'Business',
+        features: [
+          '50 horas de transcrição/mês',
+          'Resumos avançados + insights',
+          'Histórico ilimitado',
+          'Prioridade no processamento',
+          'Suporte prioritário'
+        ]
+      },
+      enterprise: {
+        name: 'Enterprise',
+        features: [
+          'Transcrição ilimitada',
+          'Gestão de equipe completa',
+          'Analytics de reuniões',
+          'SSO e controle corporativo',
+          'SLA e suporte dedicado'
+        ]
+      }
+    };
+
+    let selectedPlan = 'free';
+
+    function selectPlan(plan, element) {
+      document.querySelectorAll('.pricing-item').forEach(el => el.classList.remove('active'));
+
+      if (element) {
+        element.classList.add('active');
+      } else {
+        document.querySelector(`.pricing-item[data-plan="${plan}"]`).classList.add('active');
+      }
+
+      selectedPlan = plan;
+
+      const planData = plans[plan];
+      const featuresList = document.getElementById('featuresList');
+      featuresList.innerHTML = planData.features.map(f =>
+        `<li><i class="fas fa-check"></i> ${f}</li>`
+      ).join('');
+
+      document.getElementById('planSelected').textContent = `📋 Plano: ${planData.name}`;
+
+      showToast(`✅ Plano ${planData.name} selecionado!`, 'success');
+    }
+
+    // =========================
+    // TOAST
+    // =========================
+    function showToast(message, type = 'success') {
+        const existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+
+        const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(50px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // =========================
+    // PASSWORD STRENGTH
+    // =========================
+    const passwordInput = document.getElementById('registerPassword');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+
+    passwordInput.addEventListener('input', () => {
+        const password = passwordInput.value;
+        let strength = 0;
+        let label = '';
+
+        if (password.length >= 6) strength++;
+        if (password.length >= 10) strength++;
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        switch (strength) {
+            case 0:
+            case 1:
+                label = 'Senha fraca';
+                strengthBar.style.width = '20%';
+                strengthBar.style.background = '#ef4444';
+                break;
+            case 2:
+            case 3:
+                label = 'Senha média';
+                strengthBar.style.width = '50%';
+                strengthBar.style.background = '#f59e0b';
+                break;
+            case 4:
+                label = 'Senha forte';
+                strengthBar.style.width = '80%';
+                strengthBar.style.background = '#22c55e';
+                break;
+            case 5:
+                label = 'Senha muito forte!';
+                strengthBar.style.width = '100%';
+                strengthBar.style.background = '#22c55e';
+                break;
+            default:
+                label = 'Digite uma senha forte';
+                strengthBar.style.width = '0%';
+                strengthBar.style.background = '#e0e0e8';
+        }
+
+        strengthText.textContent = password.length > 0 ? label : 'Digite uma senha forte';
+    });
+
+    // =========================
+    // REGISTER FORM
+    // =========================
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+        const terms = document.getElementById('termsCheckbox').checked;
+
+        if (!name || !email || !password || !confirmPassword) {
+            showToast('⚠️ Preencha todos os campos', 'error');
+            return;
+        }
+
+        if (password.length < 6) {
+            showToast('⚠️ A senha deve ter pelo menos 6 caracteres', 'error');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showToast('⚠️ As senhas não coincidem', 'error');
+            return;
+        }
+
+        if (!terms) {
+            showToast('⚠️ Você precisa concordar com os termos', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, plan: selectedPlan })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.erro || '❌ Erro ao criar conta', 'error');
+                return;
+            }
+
+            if (data.token) localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user || data));
+
+            showToast('🎉 Conta criada com sucesso!');
+            setTimeout(() => window.location.replace('/dashboard.html'), 1000);
+
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Erro de conexão com servidor', 'error');
+        }
+    });
+
+    // =========================
+    // BACK HOME
+    // =========================
+    document.getElementById('backToHome').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/';
+    });
+
+    // =========================
+    // SOCIAL BUTTONS
+    // =========================
+    document.getElementById('googleBtn').addEventListener('click', () => {
+        showToast('🔜 Login com Google em breve!', 'error');
+    });
+
+    document.getElementById('githubBtn').addEventListener('click', () => {
+        showToast('🔜 Login com GitHub em breve!', 'error');
+    });
+
+    // =========================
+    // TERMS & PRIVACY
+    // =========================
+    document.getElementById('termsLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('📄 Termos de Serviço - Em construção', 'error');
+    });
+
+    document.getElementById('privacyLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('🔒 Política de Privacidade - Em construção', 'error');
+    });
+</script>
+</body>
+</html>

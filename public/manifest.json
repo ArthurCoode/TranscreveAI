@@ -1,0 +1,21 @@
+{
+  "name": "Transcreve AI",
+  "short_name": "TranscreveAI",
+  "description": "Transcrição e resumo de reuniões com inteligência artificial.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5B3B8C",
+  "icons": [
+    {
+      "src": "assets/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

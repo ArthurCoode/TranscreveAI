@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Panel | TranscribeAI - Centro de Controle</title>
+  <!-- Google Fonts + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <link rel="icon" href="assets/robo.ico" type="image/x-icon">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabaseClient.js"></script>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f1f4fa;
+        color: #1a1f2e;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        background: linear-gradient(180deg, #1e1b2e 0%, #2a2440 100%);
+        backdrop-filter: blur(10px);
+        z-index: 100;
+        transition: all 0.3s;
+        padding: 2rem 1.5rem;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+        overflow-y: auto;
+    }
+
+    .logo {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 2rem;
+        letter-spacing: -0.5px;
+    }
+
+    .logo span {
+        color: #FFD700;
+    }
+
+    .nav-menu {
+        list-style: none;
+        margin-top: 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.85rem 1rem;
+        border-radius: 14px;
+        color: #b5b3c9;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .nav-link i {
+        width: 22px;
+        font-size: 1.1rem;
+    }
+
+    .nav-link:hover, .nav-link.active {
+        background: rgba(255,255,255,0.12);
+        color: white;
+    }
+
+    .nav-divider {
+        color: #6c6f85;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin: 1.2rem 0.6rem 0.4rem;
+    }
+
+    /* Main content */
+    .main-content {
+        margin-left: 280px;
+        padding: 2rem 2.5rem;
+    }
+
+    /* Header */
+    .top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 1rem 2rem;
+        border-radius: 28px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        border: 1px solid #eef2f8;
+    }
+
+    .page-title h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .admin-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f0f2f8;
+        padding: 0.5rem 1.2rem;
+        border-radius: 40px;
+    }
+
+    /* Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 28px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        border: 1px solid #eef2f8;
+        transition: transform 0.2s;
+    }
+
+    .stat-card h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c6f85;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin: 0.5rem 0;
+    }
+
+    /* Config Panels */
+    .config-panel {
+        background: white;
+        border-radius: 32px;
+        padding: 1.8rem 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #eef2f8;
+        box-shadow: 0 6px 14px rgba(0,0,0,0.02);
+    }
+
+    /* Painéis de módulo (mostrados/ocultados por navegação, como uma SPA leve) */
+    .module-panel { display: none; }
+    .module-panel.active { display: block; }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-left: 4px solid #5B3B8C;
+        padding-left: 1rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .full-width {
+        grid-column: span 2;
+    }
+
+    .input-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .input-field label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #2c2e3a;
+    }
+
+    .input-field input, .input-field textarea, .input-field select {
+        padding: 0.85rem 1rem;
+        border: 1.5px solid #e2e6ed;
+        border-radius: 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: #fdfdfd;
+    }
+
+    .input-field input:focus, .input-field textarea:focus, .input-field select:focus {
+        outline: none;
+        border-color: #5B3B8C;
+        box-shadow: 0 0 0 3px rgba(91,59,140,0.1);
+    }
+
+    .color-preview {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .color-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 2px solid #ddd;
+    }
+
+    .btn-primary {
+        background: #5B3B8C;
+        color: white;
+        border: none;
+        padding: 0.85rem 1.8rem;
+        border-radius: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background: #7C4A9E;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(91,59,140,0.2);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1.5px solid #d0d4e0;
+        padding: 0.7rem 1.4rem;
+        border-radius: 28px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-outline:hover {
+        background: #f0f2f8;
+        border-color: #b0b4c0;
+    }
+
+    .btn-danger {
+        background: transparent;
+        border: 1.5px solid #e05a5a;
+        color: #e05a5a;
+        padding: 0.6rem 1.2rem;
+        border-radius: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-danger:hover { background: #fdeeee; }
+
+    .btn-small {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.78rem;
+        border-radius: 20px;
+    }
+
+    /* Banner Preview */
+    .banner-preview {
+        background: #f8f9ff;
+        border-radius: 24px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        border: 1px dashed #cbd0db;
+    }
+
+    .live-banner {
+        padding: 1rem 1.5rem;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        transition: all 0.2s;
+    }
+
+    /* Notifications Log / listas genéricas */
+    .notifications-log {
+        background: white;
+        border-radius: 32px;
+        padding: 1.5rem;
+        border: 1px solid #eef2f8;
+    }
+
+    .log-list {
+        margin-top: 1rem;
+    }
+
+    .log-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #edf0f5;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .log-badge {
+        background: #f0eef7;
+        padding: 0.3rem 0.8rem;
+        border-radius: 40px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .log-badge.status-ativo, .log-badge.nivel-info { background: #e6f4ea; color: #1e7e34; }
+    .log-badge.status-suspenso, .log-badge.nivel-error { background: #fdeeee; color: #c0392b; }
+    .log-badge.nivel-warning { background: #fff6e0; color: #a8710a; }
+    .log-badge.status-trial { background: #eef2ff; color: #3949ab; }
+    .log-badge.status-limite { background: #fff6e0; color: #a8710a; }
+
+    .toast-message {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #1a1f2e;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        border-left: 4px solid #5B3B8C;
+        font-weight: 500;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(40px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Filtros de topo (usuários / logs) */
+    .filter-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    .filter-row input[type="text"], .filter-row select {
+        padding: 0.7rem 1rem;
+        border: 1.5px solid #e2e6ed;
+        border-radius: 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        background: #fdfdfd;
+    }
+    .filter-row input[type="text"] { flex: 1; min-width: 200px; }
+
+    /* Tabela de usuários */
+    .users-table-wrap { overflow-x: auto; }
+    table.users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+    }
+    table.users-table th {
+        text-align: left;
+        padding: 0.7rem 0.9rem;
+        color: #6c6f85;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #edf0f5;
+        white-space: nowrap;
+    }
+    table.users-table td {
+        padding: 0.9rem 0.9rem;
+        border-bottom: 1px solid #f1f3f8;
+        vertical-align: middle;
+    }
+    table.users-table tr:hover td { background: #fafbfe; }
+
+    .user-cell-name { font-weight: 600; }
+    .user-cell-email { color: #6c6f85; font-size: 0.78rem; }
+
+    .usage-bar-track {
+        width: 90px;
+        height: 6px;
+        background: #edf0f5;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    .usage-bar-fill {
+        height: 100%;
+        background: #5B3B8C;
+    }
+
+    .user-detail-row td {
+        background: #f8f9ff;
+        padding: 1.2rem;
+    }
+
+    /* Flags */
+    .flag-card {
+        border: 1px solid #eef2f8;
+        border-radius: 20px;
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+    }
+    .flag-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .flag-key {
+        font-family: monospace;
+        background: #f0f2f8;
+        padding: 0.2rem 0.6rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-round {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #d0d4e0;
+        transition: .2s;
+        border-radius: 34px;
+    }
+    .slider-round:before {
+        position: absolute;
+        content: "";
+        height: 20px; width: 20px;
+        left: 3px; bottom: 3px;
+        background-color: white;
+        transition: .2s;
+        border-radius: 50%;
+    }
+    .switch input:checked + .slider-round { background-color: #5B3B8C; }
+    .switch input:checked + .slider-round:before { transform: translateX(20px); }
+
+    .overrides-box {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #e2e6ed;
+        display: none;
+    }
+    .overrides-box.open { display: block; }
+    .override-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0f2f8;
+        padding: 0.3rem 0.6rem 0.3rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        margin: 0.2rem 0.4rem 0.2rem 0;
+    }
+    .override-chip button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #c0392b;
+    }
+
+    .charts-row-admin {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .chart-card-admin {
+        background: white;
+        border-radius: 28px;
+        padding: 1.5rem;
+        border: 1px solid #eef2f8;
+    }
+    .chart-card-admin h3 { font-size: 1rem; margin-bottom: 1rem; }
+    .chart-card-admin canvas { max-height: 260px; }
+
+    @media (max-width: 900px) {
+        .sidebar { transform: translateX(-100%); position: absolute; }
+        .main-content { margin-left: 0; padding: 1rem; }
+        .form-grid { grid-template-columns: 1fr; }
+        .full-width { grid-column: span 1; }
+        .charts-row-admin { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">Transcreve<span>AI</span></div>
+  <ul class="nav-menu">
+    <li class="nav-item"><a href="#" class="nav-link active" id="navDashboard" data-module="dashboardModule"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+
+    <li class="nav-divider">Operação</li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navUsuarios" data-module="usuariosModule"><i class="fas fa-users"></i> Usuários & Assinaturas</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navMetricas" data-module="metricasModule"><i class="fas fa-chart-pie"></i> Métricas do Negócio</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navLogs" data-module="logsModule"><i class="fas fa-file-shield"></i> Logs & Auditoria</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navFlags" data-module="flagsModule"><i class="fas fa-toggle-on"></i> Feature Flags</a></li>
+
+    <li class="nav-divider">Conteúdo</li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navBanners" data-module="dashboardModule" data-scroll="bannerConfigPanel"><i class="fas fa-bullhorn"></i> Banners & Notificações</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navMedia" data-module="dashboardModule" data-scroll="mediaConfigPanel"><i class="fas fa-photo-video"></i> Mídia Boas-vindas</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navReprocessar" data-module="dashboardModule" data-scroll="reprocessarPanel"><i class="fas fa-sync-alt"></i> Reprocessar Resumo</a></li>
+    <li class="nav-item"><a href="#" class="nav-link" id="navHistory" data-module="dashboardModule" data-scroll="historyPanel"><i class="fas fa-clock"></i> Histórico de Envio</a></li>
+  </ul>
+</aside>
+
+<div class="main-content">
+  <div class="top-header">
+    <div class="page-title">
+      <h1 id="pageTitleAdmin">Painel de Controle</h1>
+      <p id="pageSubtitleAdmin">Gerencie notificações, banners e mídia do sistema</p>
+    </div>
+    <div class="admin-badge">
+      <i class="fas fa-user-shield"></i>
+      <span>Administrador</span>
+    </div>
+  </div>
+
+  <!-- ==================== MÓDULO: DASHBOARD (conteúdo original) ==================== -->
+  <div class="module-panel active" id="dashboardModule">
+
+    <!-- Estatísticas rápidas -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Painel de Controle de Banner (principal) -->
+    <div class="config-panel" id="bannerConfigPanel">
+      <div class="section-title">
+        <i class="fas fa-edit"></i> Configurar Banner Global / Notificação em Destaque
+      </div>
+      <div class="form-grid">
+        <div class="input-field full-width">
+          <label>Mensagem do Banner</label>
+          <textarea id="bannerMessage" rows="2" placeholder="Ex: 📢 Sistema em manutenção das 02h às 04h."></textarea>
+        </div>
+        <div class="input-field">
+          <label>Cor de Fundo</label>
+          <div class="color-preview">
+            <input type="color" id="bannerBgColor" value="#5B3B8C">
+            <span id="bgColorCode" class="log-badge">#5B3B8C</span>
+          </div>
+        </div>
+        <div class="input-field">
+          <label>Cor do Texto</label>
+          <div class="color-preview">
+            <input type="color" id="bannerTextColor" value="#FFFFFF">
+            <span id="textColorCode" class="log-badge">#FFFFFF</span>
+          </div>
+        </div>
+        <div class="input-field">
+          <label>Ícone (Font Awesome)</label>
+          <input type="text" id="bannerIcon" placeholder="fa-bell, fa-megaphone, etc" value="fa-bullhorn">
+        </div>
+        <div class="input-field">
+          <label>Tipo de Banner</label>
+          <select id="bannerType">
+            <option value="info">Informativo</option>
+            <option value="warning">Aviso importante</option>
+            <option value="success">Sucesso</option>
+            <option value="danger">Crítico</option>
+          </select>
+        </div>
+        <div class="input-field">
+          <label>Status</label>
+          <select id="bannerStatus">
+            <option value="active">Ativo (exibir para todos)</option>
+            <option value="inactive">Inativo (oculto)</option>
+          </select>
+        </div>
+        <div class="input-field full-width">
+          <label>Link (opcional)</label>
+          <input type="url" id="bannerLink" placeholder="https://seusite.com/promoção">
+        </div>
+      </div>
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+        <button class="btn-primary" id="publishBannerBtn"><i class="fas fa-globe"></i> Publicar Banner / Notificação</button>
+        <button class="btn-outline" id="previewBannerBtn"><i class="fas fa-eye"></i> Visualizar Ao Vivo</button>
+        <button class="btn-outline" id="clearBannerBtn"><i class="fas fa-trash-alt"></i> Remover Banner Ativo</button>
+      </div>
+
+      <!-- Pré-visualização ao vivo do banner -->
+      <div class="banner-preview">
+        <div style="font-weight: 500; margin-bottom: 10px;"><i class="fas fa-mobile-alt"></i> Pré-visualização (como aparecerá para usuários)</div>
+        <div id="liveBannerPreview" class="live-banner" style="background: #5B3B8C; color: white;">
+          <div><i class="fas fa-bullhorn"></i> <span id="previewText">Clique em visualizar para ver o banner</span></div>
+          <button id="dummyClose" style="background: none; border: none; color: inherit; cursor: pointer;"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel de Mídia de Boas-vindas -->
+    <div class="config-panel" id="mediaConfigPanel">
+      <div class="section-title">
+        <i class="fas fa-photo-video"></i> Mídia de Boas-vindas (Vídeo ou Foto)
+      </div>
+
+      <div class="form-grid">
+        <div class="input-field">
+          <label>Tipo de mídia</label>
+          <select id="mediaTipo">
+            <option value="video">🎬 Vídeo</option>
+            <option value="foto">🖼️ Foto</option>
+          </select>
+        </div>
+
+        <div class="input-field">
+          <label>Status</label>
+          <select id="mediaStatus">
+            <option value="true">Ativo (exibir para todos)</option>
+            <option value="false">Inativo (oculto)</option>
+          </select>
+        </div>
+
+        <div class="input-field full-width">
+          <label id="mediaUrlLabel">URL do vídeo (mp4 ou link direto)</label>
+          <input type="url" id="mediaUrl" placeholder="https://.../video.mp4">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:1rem; margin-top:1.5rem; flex-wrap: wrap;">
+        <button class="btn-primary" id="publishMediaBtn"><i class="fas fa-upload"></i> Publicar Mídia</button>
+        <button class="btn-outline" id="removeMediaBtn"><i class="fas fa-trash-alt"></i> Remover Mídia Ativa</button>
+      </div>
+
+      <div class="banner-preview">
+        <div style="font-weight:500; margin-bottom:10px;"><i class="fas fa-eye"></i> Pré-visualização</div>
+        <div id="mediaPreviewBox" style="min-height:120px; display:flex; align-items:center; justify-content:center; background:#eef2f8; border-radius:16px; overflow:hidden;">
+          <span style="color:#888;">Nenhuma mídia configurada</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel de Reprocessamento de Resumo -->
+    <div class="config-panel" id="reprocessarPanel">
+      <div class="section-title">
+        <i class="fas fa-sync-alt"></i> Reprocessar Resumo de Reunião
+      </div>
+
+      <div class="form-grid">
+        <div class="input-field full-width">
+          <label>Buscar por nome da reunião ou ID (UUID)</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="buscaTranscricaoInput" placeholder="Ex: Reunião Acme 25/07 ou o UUID">
+            <button class="btn-outline" id="buscarTranscricaoBtn" style="white-space:nowrap;"><i class="fas fa-search"></i> Buscar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="listaTranscricoesResultado" class="log-list">
+        <div class="log-item" style="justify-content: center; color: #888;">Use a busca acima para localizar uma reunião (deixe em branco e clique em Buscar para ver as 20 mais recentes).</div>
+      </div>
+
+      <div class="banner-preview" id="previewReprocessoBox" style="display:none;">
+        <div style="font-weight:500; margin-bottom:10px;"><i class="fas fa-file-alt"></i> Resultado do reprocessamento</div>
+        <div id="previewReprocessoConteudo" style="font-size:0.85rem; white-space:pre-wrap; max-height:400px; overflow-y:auto; background:white; padding:1rem; border-radius:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Log de notificações enviadas -->
+    <div class="notifications-log" id="historyPanel">
+      <div class="section-title">
+        <i class="fas fa-history"></i> Últimas Notificações & Banners Publicados
+      </div>
+      <div id="notificationLogList" class="log-list">
+        <div class="log-item" style="justify-content: center; color: #888;">Nenhuma notificação enviada ainda.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MÓDULO: USUÁRIOS & ASSINATURAS ==================== -->
+  <div class="module-panel" id="usuariosModule">
+
+    <div class="stats-grid" id="usersStatsGrid"></div>
+
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-users"></i> Usuários</div>
+
+      <div class="filter-row">
+        <input type="text" id="usersSearchInput" placeholder="Buscar por nome ou email...">
+        <select id="usersStatusFilter">
+          <option value="all">Todos os status</option>
+          <option value="ACTIVE">Ativo</option>
+          <option value="SUSPENDED">Suspenso</option>
+          <option value="LIMIT_REACHED">Limite atingido</option>
+        </select>
+        <select id="usersPlanoFilter">
+          <option value="all">Todos os planos</option>
+        </select>
+        <button class="btn-outline" id="usersRefreshBtn"><i class="fas fa-rotate"></i> Atualizar</button>
+      </div>
+
+      <div class="users-table-wrap">
+        <table class="users-table">
+          <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Plano</th>
+            <th>Status conta</th>
+            <th>Uso do ciclo</th>
+            <th>Assinatura</th>
+            <th>Cadastro</th>
+            <th>Ações</th>
+          </tr>
+          </thead>
+          <tbody id="usersTableBody">
+          <tr><td colspan="7" style="text-align:center; color:#888; padding:2rem;">Carregando usuários...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MÓDULO: MÉTRICAS DO NEGÓCIO ==================== -->
+  <div class="module-panel" id="metricasModule">
+
+    <div class="stats-grid" id="metricasStatsGrid">
+      <div class="stat-card" style="text-align:center; color:#888;">Carregando métricas...</div>
+    </div>
+
+    <div class="charts-row-admin">
+      <div class="chart-card-admin">
+        <h3>💰 Receita mensal recorrente por plano</h3>
+        <canvas id="mrrPorPlanoChart"></canvas>
+      </div>
+      <div class="chart-card-admin">
+        <h3>📈 Novos usuários (últimos 30 dias)</h3>
+        <canvas id="novosUsuariosChart"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-row-admin">
+      <div class="chart-card-admin">
+        <h3>🗂️ Assinaturas por status</h3>
+        <canvas id="assinaturasStatusChart"></canvas>
+      </div>
+      <div class="chart-card-admin">
+        <h3>🎙️ Transcrições por dia (últimos 14 dias)</h3>
+        <canvas id="transcricoesPorDiaChart"></canvas>
+      </div>
+    </div>
+
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-funnel-dollar"></i> Funil de checkout (pendentes)</div>
+      <div id="checkoutsPendentesList" class="log-list">
+        <div class="log-item" style="justify-content:center; color:#888;">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MÓDULO: LOGS & AUDITORIA ==================== -->
+  <div class="module-panel" id="logsModule">
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-file-shield"></i> Logs & Auditoria</div>
+
+      <div class="filter-row">
+        <input type="text" id="logsSearchInput" placeholder="Buscar na descrição...">
+        <select id="logsTipoFilter">
+          <option value="all">Todos os tipos</option>
+          <option value="acao_admin">Ação administrativa</option>
+          <option value="erro_sistema">Erro de sistema</option>
+          <option value="evento">Evento</option>
+        </select>
+        <select id="logsNivelFilter">
+          <option value="all">Todos os níveis</option>
+          <option value="info">Info</option>
+          <option value="warning">Warning</option>
+          <option value="error">Error</option>
+        </select>
+        <button class="btn-outline" id="logsRefreshBtn"><i class="fas fa-rotate"></i> Atualizar</button>
+      </div>
+
+      <div id="logsList" class="log-list">
+        <div class="log-item" style="justify-content:center; color:#888;">Carregando logs...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MÓDULO: FEATURE FLAGS ==================== -->
+  <div class="module-panel" id="flagsModule">
+
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-plus"></i> Nova Feature Flag</div>
+      <div class="form-grid">
+        <div class="input-field">
+          <label>Chave (usada no código)</label>
+          <input type="text" id="flagChave" placeholder="ex: theo_beta">
+        </div>
+        <div class="input-field">
+          <label>Nome amigável</label>
+          <input type="text" id="flagNome" placeholder="ex: Theo (Beta)">
+        </div>
+        <div class="input-field full-width">
+          <label>Descrição</label>
+          <input type="text" id="flagDescricao" placeholder="O que essa flag controla?">
+        </div>
+      </div>
+      <div style="margin-top:1.2rem;">
+        <button class="btn-primary" id="criarFlagBtn"><i class="fas fa-flag"></i> Criar Flag</button>
+      </div>
+    </div>
+
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-toggle-on"></i> Flags existentes</div>
+      <div id="flagsList">
+        <div class="log-item" style="justify-content:center; color:#888;">Carregando flags...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ==================== NAVEGAÇÃO ENTRE MÓDULOS ====================
+  const moduleTitles = {
+      dashboardModule: { title: 'Painel de Controle', subtitle: 'Gerencie notificações, banners e mídia do sistema' },
+      usuariosModule: { title: 'Usuários & Assinaturas', subtitle: 'Gerencie contas, planos e status de assinatura' },
+      metricasModule: { title: 'Métricas do Negócio', subtitle: 'Receita, crescimento e uso da plataforma' },
+      logsModule: { title: 'Logs & Auditoria', subtitle: 'Histórico de ações administrativas e eventos do sistema' },
+      flagsModule: { title: 'Feature Flags', subtitle: 'Controle o que está ligado, para quem' }
+  };
+
+  function switchModule(moduleId) {
+      document.querySelectorAll('.module-panel').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(moduleId);
+      if (target) target.classList.add('active');
+
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+      const meta = moduleTitles[moduleId];
+      if (meta) {
+          document.getElementById('pageTitleAdmin').textContent = meta.title;
+          document.getElementById('pageSubtitleAdmin').textContent = meta.subtitle;
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Carrega dados sob demanda na primeira vez que o módulo é aberto
+      if (moduleId === 'usuariosModule' && !window.__usuariosCarregados) { window.__usuariosCarregados = true; carregarUsuarios(); }
+      if (moduleId === 'metricasModule' && !window.__metricasCarregadas) { window.__metricasCarregadas = true; carregarMetricas(); }
+      if (moduleId === 'logsModule' && !window.__logsCarregados) { window.__logsCarregados = true; carregarLogs(); }
+      if (moduleId === 'flagsModule' && !window.__flagsCarregadas) { window.__flagsCarregadas = true; carregarFlags(); }
+  }
+
+  document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          const moduleId = link.dataset.module || 'dashboardModule';
+          switchModule(moduleId);
+          const scrollTarget = link.dataset.scroll;
+          if (scrollTarget) {
+              setTimeout(() => {
+                  document.getElementById(scrollTarget)?.scrollIntoView({ behavior: 'smooth' });
+              }, 50);
+          }
+      });
+  });
+
+  // Escapa texto antes de interpolar em innerHTML (dados vêm de usuários)
+  function escHtml(v) {
+      return String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function getTokenHeader() {
+      // Middleware valida via cookie tr_token (same-origin, enviado automaticamente).
+      // O header Authorization é um fallback caso o token esteja só no localStorage.
+      const t = localStorage.getItem('tr_token');
+      return t ? { 'Authorization': 'Bearer ' + t } : {};
+  }
+
+  async function adminFetch(path, options = {}) {
+      const resp = await fetch(path, {
+          ...options,
+          headers: {
+              'Content-Type': 'application/json',
+              ...getTokenHeader(),
+              ...(options.headers || {})
+          },
+          credentials: 'same-origin'
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || data.ok === false) {
+          throw new Error(data.erro || `Erro ${resp.status}`);
+      }
+      return data;
+  }
+
+  function getSb() {
+      return window.supabaseClient || window.supabase;
+  }
+
+  function showToast(msg, type = 'success') {
+      const existing = document.querySelector('.toast-message');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast-message';
+      const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : type === 'error' ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-info-circle"></i>';
+      toast.innerHTML = `${icon} <span>${msg}</span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 300);
+      }, 3500);
+  }
+
+  // Registra uma ação administrativa em logs_admin, via backend (não mais direto no Supabase)
+  async function logAdminAction({ descricao, categoria = null, usuario_id = null, nivel = 'info', metadata = null }) {
+      try {
+          await adminFetch('/api/admin/logs', {
+              method: 'POST',
+              body: JSON.stringify({ descricao, categoria, usuario_id, nivel, metadata })
+          });
+      } catch (err) {
+          console.error('Falha ao registrar log admin:', err);
+      }
+  }
+
+  // ==================== BANNER (SUPABASE) ====================
+  const BANNER_TABLE = 'dashboard_banner';
+  let notificationsHistory = [];  // Histórico carregado do Supabase (mapeado para o formato do front)
+  let activeBanner = null;        // Banner ativo atual
+
+  // Converte uma linha da tabela dashboard_banner para o formato usado no front
+  function mapRowToBanner(row) {
+      return {
+          id: row.id,
+          message: row.message,
+          bgColor: row.bg_color,
+          textColor: row.text_color,
+          icon: row.icon,
+          link: row.link,
+          type: row.type,
+          status: row.ativo ? 'active' : 'inactive',
+          active: row.ativo,
+          timestamp: new Date(row.criado_em).toLocaleString('pt-BR')
+      };
+  }
+
+  // Carrega histórico + banner ativo do Supabase
+  async function loadData() {
+      try {
+          let data = [];
+          try {
+              ({ data } = await adminFetch('/api/admin/conteudo?tipo=banner'));
+          } catch (e) {
+              console.error('Erro ao carregar histórico de banners:', e);
+          }
+          notificationsHistory = (data || []).map(mapRowToBanner);
+
+          activeBanner = notificationsHistory.find(b => b.active) || null;
+
+          renderStatsAndLog();
+          applyActiveBannerToPreview();
+          syncFormFromActiveBanner();
+      } catch (err) {
+          console.error('Erro ao carregar banners:', err);
+      }
+  }
+
+  // Publicar banner (insere no Supabase e recarrega)
+  async function publishBanner() {
+
+      const message = document.getElementById('bannerMessage').value.trim();
+      if (!message) {
+          showToast('❌ A mensagem do banner é obrigatória', 'error');
+          return;
+      }
+      const bgColor = document.getElementById('bannerBgColor').value;
+      const textColor = document.getElementById('bannerTextColor').value;
+      let icon = document.getElementById('bannerIcon').value.trim();
+      if (!icon) icon = 'fa-bell';
+      const link = document.getElementById('bannerLink').value.trim();
+      const type = document.getElementById('bannerType').value;
+      const status = document.getElementById('bannerStatus').value;
+      const ativo = status === 'active';
+
+      try {
+          // o servidor valida os campos e desativa o banner anterior se este for ativo
+          try {
+              await adminFetch('/api/admin/conteudo', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                      tipo: 'banner',
+                      message,
+                      bg_color: bgColor,
+                      text_color: textColor,
+                      icon,
+                      link: link || null,
+                      type,
+                      ativo
+                  })
+              });
+          } catch (e) {
+              console.error('Erro ao publicar banner:', e);
+              showToast('❌ ' + e.message, 'error');
+              return;
+          }
+
+          showToast(ativo
+              ? '✅ Banner publicado e ativado com sucesso!'
+              : '📢 Notificação registrada como inativa (não será exibida)', 'success');
+
+          logAdminAction({ descricao: `Banner publicado: "${message.substring(0, 60)}"`, categoria: 'banner' });
+
+          await loadData();
+      } catch (err) {
+          console.error('Erro:', err);
+          showToast('❌ Erro ao publicar banner', 'error');
+      }
+  }
+
+  // Remover banner ativo (desativa no Supabase)
+  async function clearActiveBanner() {
+
+      if (!activeBanner) {
+          showToast('ℹ️ Nenhum banner ativo no momento.', 'info');
+          return;
+      }
+
+      try {
+          try {
+              await adminFetch('/api/admin/conteudo?tipo=banner', { method: 'DELETE' });
+          } catch (e) {
+              console.error('Erro ao remover banner:', e);
+              showToast('❌ Erro ao remover banner', 'error');
+              return;
+          }
+
+          showToast('🗑️ Banner ativo removido com sucesso!', 'success');
+          logAdminAction({ descricao: 'Banner ativo removido', categoria: 'banner' });
+          await loadData();
+      } catch (err) {
+          console.error('Erro:', err);
+          showToast('❌ Erro ao remover banner', 'error');
+      }
+  }
+
+  // Aplicar banner ativo no preview e sincronizar form (preencher com dados ativos se existir)
+  function applyActiveBannerToPreview() {
+      if (activeBanner && activeBanner.active) {
+          renderLivePreview(activeBanner);
+          document.getElementById('bannerMessage').value = activeBanner.message;
+          document.getElementById('bannerBgColor').value = activeBanner.bgColor;
+          document.getElementById('bannerTextColor').value = activeBanner.textColor;
+          document.getElementById('bannerIcon').value = activeBanner.icon;
+          document.getElementById('bannerLink').value = activeBanner.link || '';
+          document.getElementById('bannerType').value = activeBanner.type;
+          document.getElementById('bannerStatus').value = 'active';
+          updateColorCodes();
+      } else {
+          renderLivePreview(null);
+      }
+  }
+
+  function syncFormFromActiveBanner() {
+      if (activeBanner && activeBanner.active) {
+          applyActiveBannerToPreview();
+      }
+  }
+
+  function updateColorCodes() {
+      const bg = document.getElementById('bannerBgColor').value;
+      const text = document.getElementById('bannerTextColor').value;
+      document.getElementById('bgColorCode').innerText = bg;
+      document.getElementById('textColorCode').innerText = text;
+  }
+
+  function renderLivePreview(banner) {
+      const previewDiv = document.getElementById('liveBannerPreview');
+      if(!banner || !banner.active) {
+          previewDiv.style.background = "#eef2f8";
+          previewDiv.style.color = "#555";
+          previewDiv.innerHTML = `<div><i class="fas fa-eye-slash"></i> <span>Nenhum banner ativo no momento. Crie e publique um banner acima.</span></div>
+                                  <button id="dummyClose" style="background: none; border: none; color: #888; cursor: pointer;"><i class="fas fa-times"></i></button>`;
+          return;
+      }
+      previewDiv.style.background = banner.bgColor;
+      previewDiv.style.color = banner.textColor;
+      let iconHtml = `<i class="fas ${banner.icon}"></i>`;
+      let contentHtml = `${iconHtml} <span>${escHtml(banner.message)}</span>`;
+      if(banner.link) {
+          contentHtml = `<a href="${escHtml(banner.link)}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; display: flex; align-items: center; gap: 8px;">${iconHtml} ${escHtml(banner.message)}</a>`;
+      }
+      previewDiv.innerHTML = `<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">${contentHtml}</div>
+                              <button id="dummyClose" style="background: none; border: none; color: inherit; opacity: 0.8; cursor: pointer;"><i class="fas fa-times"></i></button>`;
+  }
+
+  // Estatísticas e Log
+  function renderStatsAndLog() {
+      const activeExists = (activeBanner && activeBanner.active) ? 1 : 0;
+      const totalNotifications = notificationsHistory.length;
+      const lastNotification = notificationsHistory.length > 0 ? notificationsHistory[0] : null;
+
+      document.getElementById('statsGrid').innerHTML = `
+          <div class="stat-card"><h3><i class="fas fa-bullhorn"></i> Banner Ativo</h3><div class="stat-value">${activeExists ? 'Sim' : 'Não'}</div><span>${activeExists ? 'Exibindo para todos' : 'Nenhum ativo'}</span></div>
+          <div class="stat-card"><h3><i class="fas fa-history"></i> Notificações Enviadas</h3><div class="stat-value">${totalNotifications}</div><span>últimos registros</span></div>
+          <div class="stat-card"><h3><i class="fas fa-clock"></i> Última ação</h3><div class="stat-value">${lastNotification ? lastNotification.timestamp : '---'}</div><span>última publicação</span></div>
+      `;
+
+      const logContainer = document.getElementById('notificationLogList');
+      if(notificationsHistory.length === 0) {
+          logContainer.innerHTML = '<div class="log-item" style="justify-content: center; color: #888;">Nenhuma notificação ou banner publicado ainda.</div>';
+          return;
+      }
+      logContainer.innerHTML = notificationsHistory.map(log => `
+          <div class="log-item">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div><strong><i class="fas ${escHtml(log.icon || 'fa-bell')}"></i> ${escHtml(log.message.substring(0, 60))}</strong></div>
+                  <div style="font-size: 0.7rem; color: #6c6f85;">${log.timestamp} | Tipo: ${log.type} | Status: ${log.status === 'active' ? 'Ativo' : 'Inativo'}</div>
+                  <div style="font-size: 0.7rem;"><span style="background: ${log.bgColor}; color: ${log.textColor}; padding: 2px 8px; border-radius: 20px;">Preview: ${log.bgColor}</span></div>
+              </div>
+              <span class="log-badge">${log.link ? '<i class="fas fa-link"></i>' : ''}</span>
+          </div>
+      `).join('');
+  }
+
+  // Visualizar ao vivo com base nos campos do formulário (sem publicar)
+  function previewCurrentForm() {
+      const message = document.getElementById('bannerMessage').value.trim();
+      if(!message) {
+          showToast("Digite uma mensagem para visualizar o banner", "info");
+          return;
+      }
+      const tempBanner = {
+          message: message,
+          bgColor: document.getElementById('bannerBgColor').value,
+          textColor: document.getElementById('bannerTextColor').value,
+          icon: document.getElementById('bannerIcon').value.trim() || 'fa-bell',
+          link: document.getElementById('bannerLink').value.trim(),
+          type: document.getElementById('bannerType').value,
+          active: true
+      };
+      renderLivePreview(tempBanner);
+      showToast("👁️ Visualização temporária (não salva)", "success");
+  }
+
+  // ==================== MÍDIA DE BOAS-VINDAS (SUPABASE) ====================
+  (function mediaModule() {
+      const sb = true; // leitura/escrita agora passam por /api/admin/conteudo
+
+      const tipoEl = document.getElementById('mediaTipo');
+      const statusEl = document.getElementById('mediaStatus');
+      const urlEl = document.getElementById('mediaUrl');
+      const urlLabel = document.getElementById('mediaUrlLabel');
+      const previewBox = document.getElementById('mediaPreviewBox');
+
+      function updateUrlLabel() {
+          urlLabel.textContent = tipoEl.value === 'video'
+              ? 'URL do vídeo (mp4 ou link direto)'
+              : 'URL da foto (jpg, png, webp...)';
+      }
+      tipoEl.addEventListener('change', updateUrlLabel);
+      updateUrlLabel();
+
+      function renderPreview(tipo, url) {
+          if (!url) {
+              previewBox.innerHTML = '<span style="color:#888;">Nenhuma mídia configurada</span>';
+              return;
+          }
+          previewBox.innerHTML = tipo === 'video'
+              ? `<video src="${escHtml(url)}" controls muted style="max-width:100%; max-height:280px; border-radius:12px;"></video>`
+              : `<img src="${escHtml(url)}" style="max-width:100%; max-height:280px; border-radius:12px;">`;
+      }
+
+      async function loadActiveMedia() {
+          if (!sb) {
+              previewBox.innerHTML = '<span style="color:#ff6b6b;">❌ Supabase não disponível. Verifique o supabaseClient.js</span>';
+              return;
+          }
+          try {
+              let data = [];
+              try {
+                  const resp = await adminFetch('/api/admin/conteudo?tipo=midia');
+                  data = (resp.data || []).filter((m) => m.ativo).slice(0, 1);
+              } catch (e) {
+                  console.error('Erro ao carregar mídia:', e);
+                  previewBox.innerHTML = '<span style="color:#ff6b6b;">❌ Erro ao carregar mídia</span>';
+                  return;
+              }
+              if (data && data.length > 0) {
+                  const m = data[0];
+                  tipoEl.value = m.tipo;
+                  statusEl.value = 'true';
+                  urlEl.value = m.url;
+                  updateUrlLabel();
+                  renderPreview(m.tipo, m.url);
+              } else {
+                  renderPreview(null, null);
+              }
+          } catch (err) {
+              console.error('Erro:', err);
+              previewBox.innerHTML = '<span style="color:#ff6b6b;">❌ Erro ao conectar com o banco</span>';
+          }
+      }
+
+      async function publishMedia() {
+          if (!sb) {
+              showToast('❌ Supabase não disponível', 'error');
+              return;
+          }
+
+          const tipo = tipoEl.value;
+          const url = urlEl.value.trim();
+          const ativo = statusEl.value === 'true';
+
+          if (!url) {
+              showToast('❌ Informe a URL da mídia', 'error');
+              return;
+          }
+
+          try {
+              try {
+                  await adminFetch('/api/admin/conteudo', {
+                      method: 'POST',
+                      body: JSON.stringify({ tipo: 'midia', tipo_midia: tipo, url, ativo })
+                  });
+              } catch (e) {
+                  console.error('Erro ao publicar mídia:', e);
+                  showToast('❌ ' + e.message, 'error');
+                  return;
+              }
+
+              showToast(ativo ? '✅ Mídia publicada e ativada!' : '📁 Mídia salva como inativa', 'success');
+              logAdminAction({ descricao: `Mídia de boas-vindas publicada (${tipo})`, categoria: 'midia' });
+              renderPreview(tipo, url);
+          } catch (err) {
+              console.error('Erro:', err);
+              showToast('❌ Erro ao publicar mídia', 'error');
+          }
+      }
+
+      async function removeActiveMedia() {
+          if (!sb) {
+              showToast('❌ Supabase não disponível', 'error');
+              return;
+          }
+
+          try {
+              try {
+                  await adminFetch('/api/admin/conteudo?tipo=midia', { method: 'DELETE' });
+              } catch (e) {
+                  console.error('Erro ao remover mídia:', e);
+                  showToast('❌ Erro ao remover mídia', 'error');
+                  return;
+              }
+              urlEl.value = '';
+              renderPreview(null, null);
+              showToast('🗑️ Mídia ativa removida', 'success');
+              logAdminAction({ descricao: 'Mídia de boas-vindas removida', categoria: 'midia' });
+          } catch (err) {
+              console.error('Erro:', err);
+              showToast('❌ Erro ao remover mídia', 'error');
+          }
+      }
+
+      document.getElementById('publishMediaBtn').addEventListener('click', publishMedia);
+      document.getElementById('removeMediaBtn').addEventListener('click', removeActiveMedia);
+
+      if (sb) {
+          loadActiveMedia();
+      } else {
+          previewBox.innerHTML = '<span style="color:#ff6b6b;">⚠️ Aguardando Supabase... Verifique se o supabaseClient.js está carregado.</span>';
+          setTimeout(() => {
+              const sb2 = window.supabaseClient || window.supabase;
+              if (sb2) {
+                  loadActiveMedia();
+              }
+          }, 1000);
+      }
+  })();
+
+  // ==================== REPROCESSAR RESUMO (ADMIN) ====================
+  (function reprocessarModule() {
+      const buscaInput = document.getElementById('buscaTranscricaoInput');
+      const buscarBtn = document.getElementById('buscarTranscricaoBtn');
+      const listaResultado = document.getElementById('listaTranscricoesResultado');
+      const previewBox = document.getElementById('previewReprocessoBox');
+      const previewConteudo = document.getElementById('previewReprocessoConteudo');
+
+      function getTokenHeader() {
+          const t = localStorage.getItem('tr_token');
+          return t ? { 'Authorization': 'Bearer ' + t } : {};
+      }
+
+      async function buscarTranscricoes() {
+          const q = buscaInput.value.trim();
+          listaResultado.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Buscando...</div>';
+          try {
+              const resp = await fetch('/api/admin/listar-transcricoes?q=' + encodeURIComponent(q), {
+                  headers: getTokenHeader()
+              });
+              const data = await resp.json();
+              if (!resp.ok || !data.ok) {
+                  listaResultado.innerHTML = `<div class="log-item" style="justify-content:center; color:#e05a5a;">${data.erro || 'Erro ao buscar.'}</div>`;
+                  return;
+              }
+              renderLista(data.transcricoes);
+          } catch (err) {
+              listaResultado.innerHTML = '<div class="log-item" style="justify-content:center; color:#e05a5a;">Erro de conexão.</div>';
+          }
+      }
+
+      function renderLista(itens) {
+          if (!itens || itens.length === 0) {
+              listaResultado.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Nenhuma reunião encontrada.</div>';
+              return;
+          }
+          listaResultado.innerHTML = itens.map(t => `
+              <div class="log-item">
+                  <div style="display:flex; flex-direction:column; gap:4px;">
+                      <strong>${escHtml(t.nome || 'Sem título')}</strong>
+                      <span style="font-size:0.7rem; color:#6c6f85;">
+                          ${t.data || ''} ${t.hora_inicio || ''} | ID: ${t.id}
+                          ${t.sentimento ? ' | Sentimento: ' + t.sentimento : ''}
+                          ${t.tem_risco_cancelamento ? ' | <span style="color:#e05a5a;">⚠ risco de cancelamento</span>' : ''}
+                      </span>
+                  </div>
+                  <button class="btn-primary" data-id="${t.id}" style="padding:0.5rem 1rem;">
+                      <i class="fas fa-sync-alt"></i> Reprocessar
+                  </button>
+              </div>
+          `).join('');
+
+          listaResultado.querySelectorAll('button[data-id]').forEach(btn => {
+              btn.addEventListener('click', () => reprocessar(btn.dataset.id, btn));
+          });
+      }
+
+      async function reprocessar(id, btn) {
+          const original = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+          try {
+              const resp = await fetch('/api/admin/reprocessar-resumo', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', ...getTokenHeader() },
+                  body: JSON.stringify({ id })
+              });
+              const data = await resp.json();
+
+              if (!resp.ok || !data.ok) {
+                  showToast('❌ ' + (data.erro || 'Erro ao reprocessar.'), 'error');
+                  return;
+              }
+
+              showToast('✅ Resumo reprocessado com sucesso!', 'success');
+              logAdminAction({ descricao: `Resumo reprocessado (transcrição ${id})`, categoria: 'transcricao' });
+              mostrarPreview(data.transcricao);
+          } catch (err) {
+              showToast('❌ Erro de conexão ao reprocessar.', 'error');
+          } finally {
+              btn.disabled = false;
+              btn.innerHTML = original;
+          }
+      }
+
+      function mostrarPreview(t) {
+          previewBox.style.display = 'block';
+          previewConteudo.textContent =
+              `Reunião: ${t.nome}\n\n` +
+              `--- RESUMO ---\n${t.resumo}\n\n` +
+              `--- INSIGHTS ---\n${(t.insights || []).map(i => '- ' + i).join('\n')}\n\n` +
+              `--- METADADOS ---\n` +
+              `Temas: ${(t.temas || []).join(', ')}\n` +
+              `Cliente: ${t.cliente_mencionado || '-'}\n` +
+              `Participantes: ${(t.participantes || []).join(', ')}\n` +
+              `Sentimento: ${t.sentimento || '-'}\n` +
+              `Tem reclamação: ${t.tem_reclamacao ? 'Sim' : 'Não'}\n` +
+              `Risco de cancelamento: ${t.tem_risco_cancelamento ? 'Sim' : 'Não'}`;
+          previewBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      buscarBtn.addEventListener('click', buscarTranscricoes);
+      buscaInput.addEventListener('keydown', e => { if (e.key === 'Enter') buscarTranscricoes(); });
+  })();
+
+  // eventos e mudanças de cor
+  document.getElementById('bannerBgColor').addEventListener('input', updateColorCodes);
+  document.getElementById('bannerTextColor').addEventListener('input', updateColorCodes);
+  document.getElementById('publishBannerBtn').addEventListener('click', publishBanner);
+  document.getElementById('clearBannerBtn').addEventListener('click', clearActiveBanner);
+  document.getElementById('previewBannerBtn').addEventListener('click', previewCurrentForm);
+
+  // Inicialização do módulo original
+  updateColorCodes();
+  renderLivePreview(null);
+  loadData();
+
+  // ============================================================
+  // ==================== USUÁRIOS & ASSINATURAS ================
+  // ============================================================
+  let __planosCache = [];
+  let __usuariosCache = [];
+
+  async function carregarPlanosCache() {
+      if (__planosCache.length) return __planosCache;
+      try {
+          const resp = await adminFetch('/api/admin/planos');
+          __planosCache = resp.data || [];
+      } catch (err) {
+          console.error('Erro ao carregar planos:', err);
+      }
+      return __planosCache;
+  }
+
+  function nomePlano(planoId) {
+      const p = __planosCache.find(pl => pl.id === planoId);
+      return p ? p.nome : '—';
+  }
+
+  function horasMesPlano(planoId) {
+      const p = __planosCache.find(pl => pl.id === planoId);
+      return p ? p.horas_mes : null;
+  }
+
+  async function carregarUsuarios() {
+      const tbody = document.getElementById('usersTableBody');
+
+      await carregarPlanosCache();
+
+      const selectPlano = document.getElementById('usersPlanoFilter');
+      if (selectPlano.options.length <= 1) {
+          __planosCache.forEach(p => {
+              const opt = document.createElement('option');
+              opt.value = p.id;
+              opt.textContent = p.nome;
+              selectPlano.appendChild(opt);
+          });
+      }
+
+      try {
+          const resp = await adminFetch('/api/admin/usuarios');
+          __usuariosCache = resp.data || [];
+          renderUsersStats();
+          renderUsersTable();
+      } catch (err) {
+          console.error('Erro ao carregar usuários:', err);
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#e05a5a;">${escHtml(err.message)}</td></tr>`;
+      }
+  }
+
+  function renderUsersStats() {
+      const total = __usuariosCache.length;
+      const ativos = __usuariosCache.filter(u => u.status === 'ACTIVE').length;
+      const suspensos = __usuariosCache.filter(u => u.status === 'SUSPENDED').length;
+      const limiteAtingido = __usuariosCache.filter(u => u.status === 'LIMIT_REACHED').length;
+
+      document.getElementById('usersStatsGrid').innerHTML = `
+          <div class="stat-card"><h3><i class="fas fa-users"></i> Total de Usuários</h3><div class="stat-value">${total}</div><span>cadastrados</span></div>
+          <div class="stat-card"><h3><i class="fas fa-user-check"></i> Ativos</h3><div class="stat-value">${ativos}</div><span>contas ativas</span></div>
+          <div class="stat-card"><h3><i class="fas fa-hourglass-half"></i> Limite Atingido</h3><div class="stat-value">${limiteAtingido}</div><span>estouraram o limite do plano</span></div>
+          <div class="stat-card"><h3><i class="fas fa-user-slash"></i> Suspensos</h3><div class="stat-value">${suspensos}</div><span>contas suspensas</span></div>
+      `;
+  }
+
+  function statusBadgeClass(status) {
+      if (status === 'ACTIVE') return 'status-ativo';
+      if (status === 'SUSPENDED') return 'status-suspenso';
+      if (status === 'LIMIT_REACHED') return 'status-limite';
+      return '';
+  }
+
+  function renderUsersTable() {
+      const tbody = document.getElementById('usersTableBody');
+      const search = document.getElementById('usersSearchInput').value.trim().toLowerCase();
+      const statusFilter = document.getElementById('usersStatusFilter').value;
+      const planoFilter = document.getElementById('usersPlanoFilter').value;
+
+      let lista = __usuariosCache.filter(u => {
+          const matchSearch = !search || (u.nome || '').toLowerCase().includes(search) || (u.email || '').toLowerCase().includes(search);
+          const matchStatus = statusFilter === 'all' || u.status === statusFilter;
+          const matchPlano = planoFilter === 'all' || u.plano_id === planoFilter;
+          return matchSearch && matchStatus && matchPlano;
+      });
+
+      if (!lista.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#888; padding:2rem;">Nenhum usuário encontrado.</td></tr>';
+          return;
+      }
+
+      tbody.innerHTML = lista.map(u => {
+          const horasMes = horasMesPlano(u.plano_id);
+          const segundosMes = horasMes ? horasMes * 3600 : null;
+          const usoPct = segundosMes ? Math.min(100, Math.round((u.segundos_usados || 0) / segundosMes * 100)) : 0;
+          const horasUsadas = ((u.segundos_usados || 0) / 3600).toFixed(1);
+
+          const assinaturaAtiva = (u.assinaturas || []).find(a => a.status === 'ativa');
+          const assinaturaLabel = assinaturaAtiva
+              ? `<span class="log-badge status-ativo">${assinaturaAtiva.ciclo}</span>`
+              : (u.assinaturas && u.assinaturas.length ? `<span class="log-badge">${u.assinaturas[0].status}</span>` : '<span class="log-badge">sem histórico</span>');
+
+          const cadastro = u.criado_em ? new Date(u.criado_em).toLocaleDateString('pt-BR') : '—';
+
+          return `
+          <tr>
+              <td>
+                  <div class="user-cell-name">${escHtml(u.nome || 'Sem nome')}</div>
+                  <div class="user-cell-email">${escHtml(u.email || '—')}</div>
+              </td>
+              <td>${escHtml(nomePlano(u.plano_id))}</td>
+              <td><span class="log-badge ${statusBadgeClass(u.status)}">${u.status || '—'}</span></td>
+              <td>
+                  <div style="font-size:0.75rem; margin-bottom:4px;">${horasUsadas}h${horasMes ? ' / ' + horasMes + 'h' : ''}</div>
+                  <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${usoPct}%;"></div></div>
+              </td>
+              <td>${assinaturaLabel}</td>
+              <td>${cadastro}</td>
+              <td>
+                  <button class="btn-outline btn-small toggle-status-btn" data-id="${u.id}" data-status="${u.status}">
+                      ${u.status === 'SUSPENDED' ? '<i class="fas fa-play"></i> Ativar' : '<i class="fas fa-ban"></i> Suspender'}
+                  </button>
+                  <button class="btn-outline btn-small detail-user-btn" data-id="${u.id}" style="margin-left:6px;"><i class="fas fa-chevron-down"></i></button>
+              </td>
+          </tr>
+          <tr class="user-detail-row" id="detail-row-${u.id}" style="display:none;">
+              <td colspan="7">${renderUserDetail(u)}</td>
+          </tr>
+          `;
+      }).join('');
+
+      tbody.querySelectorAll('.toggle-status-btn').forEach(btn => {
+          btn.addEventListener('click', () => toggleUserStatus(btn.dataset.id, btn.dataset.status));
+      });
+      tbody.querySelectorAll('.detail-user-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const row = document.getElementById('detail-row-' + btn.dataset.id);
+              row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+          });
+      });
+      tbody.querySelectorAll('.salvar-plano-btn').forEach(btn => {
+          btn.addEventListener('click', () => mudarPlanoUsuario(btn.dataset.id));
+      });
+  }
+
+  function renderUserDetail(u) {
+      const historico = (u.assinaturas || []).map(a => `
+          <div class="log-item">
+              <div>
+                  <strong>${a.ciclo}</strong> — <span class="log-badge ${a.status === 'ativa' ? 'status-ativo' : ''}">${a.status}</span>
+                  <div style="font-size:0.7rem; color:#6c6f85;">${a.criado_em ? new Date(a.criado_em).toLocaleString('pt-BR') : ''} ${a.mp_payment_id ? '| pgto: ' + a.mp_payment_id : ''}</div>
+              </div>
+              <span class="log-badge">${a.quantidade_usuarios || 1} usuário(s)</span>
+          </div>
+      `).join('') || '<div class="log-item" style="justify-content:center; color:#888;">Sem histórico de assinaturas.</div>';
+
+      const opcoesPlano = __planosCache.map(p => `<option value="${escHtml(p.id)}" ${p.id === u.plano_id ? 'selected' : ''}>${escHtml(p.nome)}</option>`).join('');
+
+      return `
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+              <div>
+                  <div style="font-weight:600; margin-bottom:8px;"><i class="fas fa-id-card"></i> Dados da conta</div>
+                  <div style="font-size:0.85rem; line-height:1.8; color:#4a4d5e;">
+                      ID: <code>${u.id}</code><br>
+                      Team: ${u.team_id || '—'}<br>
+                      Role: ${u.role || '—'}<br>
+                      Perguntas ao Theo usadas: ${u.perguntas_theo_usadas ?? 0}<br>
+                      Ciclo atual: ${u.inicio_ciclo ? new Date(u.inicio_ciclo).toLocaleDateString('pt-BR') : '—'} até ${u.fim_ciclo ? new Date(u.fim_ciclo).toLocaleDateString('pt-BR') : '—'}
+                  </div>
+                  <div style="margin-top:1rem; display:flex; gap:10px; align-items:center;">
+                      <select class="plano-select-inline" id="plano-select-${u.id}" style="padding:0.5rem 0.8rem; border-radius:12px; border:1.5px solid #e2e6ed;">
+                          ${opcoesPlano}
+                      </select>
+                      <button class="btn-primary btn-small salvar-plano-btn" data-id="${u.id}"><i class="fas fa-save"></i> Mudar plano</button>
+                  </div>
+                  <div style="font-size:0.7rem; color:#a0a3b0; margin-top:6px;">Isso altera <code>usuarios.plano_id</code> diretamente — é um override manual, não gera cobrança.</div>
+              </div>
+              <div>
+                  <div style="font-weight:600; margin-bottom:8px;"><i class="fas fa-receipt"></i> Histórico de assinaturas</div>
+                  ${historico}
+              </div>
+          </div>
+      `;
+  }
+
+  async function toggleUserStatus(userId, statusAtual) {
+      const novoStatus = statusAtual === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
+      try {
+          await adminFetch('/api/admin/usuarios', {
+              method: 'PUT',
+              body: JSON.stringify({ id: userId, status: novoStatus })
+          });
+          showToast(novoStatus === 'SUSPENDED' ? '🚫 Usuário suspenso' : '✅ Usuário reativado', 'success');
+          await carregarUsuarios();
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  async function mudarPlanoUsuario(userId) {
+      const select = document.getElementById('plano-select-' + userId);
+      const novoPlanoId = select.value;
+      try {
+          await adminFetch('/api/admin/usuarios', {
+              method: 'PUT',
+              body: JSON.stringify({ id: userId, plano_id: novoPlanoId })
+          });
+          showToast('✅ Plano atualizado (override manual)', 'success');
+          await carregarUsuarios();
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  document.getElementById('usersSearchInput').addEventListener('input', renderUsersTable);
+  document.getElementById('usersStatusFilter').addEventListener('change', renderUsersTable);
+  document.getElementById('usersPlanoFilter').addEventListener('change', renderUsersTable);
+  document.getElementById('usersRefreshBtn').addEventListener('click', carregarUsuarios);
+
+  // ============================================================
+  // ==================== MÉTRICAS DO NEGÓCIO ====================
+  // ============================================================
+  async function carregarMetricas() {
+      await carregarPlanosCache();
+
+      try {
+          const resp = await adminFetch('/api/admin/metrics');
+          const { assinaturas, usuarios, checkoutsPendentes, transcricoes } = resp.data;
+
+          const ativas = (assinaturas || []).filter(a => a.status === 'ativa');
+
+          // MRR: soma do preço mensal (ou preco_anual/12) de cada assinatura ativa
+          let mrr = 0;
+          const receitaPorPlano = {};
+          ativas.forEach(a => {
+              const plano = __planosCache.find(p => p.id === a.plano_id);
+              if (!plano) return;
+              const valorMensal = a.ciclo === 'anual' ? (Number(plano.preco_anual) / 12) : Number(plano.preco_mensal);
+              const multiplicador = plano.por_usuario ? (a.quantidade_usuarios || 1) : 1;
+              const valor = valorMensal * multiplicador;
+              mrr += valor;
+              receitaPorPlano[plano.nome] = (receitaPorPlano[plano.nome] || 0) + valor;
+          });
+
+          const hoje = new Date();
+          const trintaDiasAtras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+          const novosUsuarios30d = (usuarios || []).filter(u => u.criado_em && new Date(u.criado_em) >= trintaDiasAtras).length;
+
+          document.getElementById('metricasStatsGrid').innerHTML = `
+              <div class="stat-card"><h3><i class="fas fa-sack-dollar"></i> MRR</h3><div class="stat-value">R$ ${mrr.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}</div><span>receita recorrente mensal</span></div>
+              <div class="stat-card"><h3><i class="fas fa-file-signature"></i> Assinaturas Ativas</h3><div class="stat-value">${ativas.length}</div><span>de ${(assinaturas || []).length} no total</span></div>
+              <div class="stat-card"><h3><i class="fas fa-user-plus"></i> Novos Usuários (30d)</h3><div class="stat-value">${novosUsuarios30d}</div><span>últimos 30 dias</span></div>
+              <div class="stat-card"><h3><i class="fas fa-inbox"></i> Checkouts Pendentes</h3><div class="stat-value">${(checkoutsPendentes || []).filter(c => c.status !== 'concluido').length}</div><span>funil em aberto</span></div>
+          `;
+
+          renderMrrPorPlanoChart(receitaPorPlano);
+          renderNovosUsuariosChart(usuarios || []);
+          renderAssinaturasStatusChart(assinaturas || []);
+          renderChecktoutsPendentes(checkoutsPendentes || []);
+          renderTranscricoesPorDiaChart(transcricoes || []);
+
+      } catch (err) {
+          console.error('Erro ao carregar métricas:', err);
+          document.getElementById('metricasStatsGrid').innerHTML = `<div class="stat-card" style="color:#e05a5a;">${escHtml(err.message)}</div>`;
+      }
+  }
+
+  let __chartMrr, __chartNovos, __chartAssinStatus, __chartTranscDia;
+
+  function renderMrrPorPlanoChart(receitaPorPlano) {
+      const ctx = document.getElementById('mrrPorPlanoChart');
+      const labels = Object.keys(receitaPorPlano);
+      const valores = Object.values(receitaPorPlano);
+      if (__chartMrr) __chartMrr.destroy();
+      __chartMrr = new Chart(ctx, {
+          type: 'bar',
+          data: { labels, datasets: [{ label: 'MRR (R$)', data: valores, backgroundColor: '#5B3B8C', borderRadius: 8 }] },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+  }
+
+  function renderNovosUsuariosChart(usuarios) {
+      const ctx = document.getElementById('novosUsuariosChart');
+      const dias = [];
+      const counts = [];
+      for (let i = 29; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const key = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+          dias.push(key);
+          const count = usuarios.filter(u => u.criado_em && new Date(u.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) === key).length;
+          counts.push(count);
+      }
+      if (__chartNovos) __chartNovos.destroy();
+      __chartNovos = new Chart(ctx, {
+          type: 'line',
+          data: { labels: dias, datasets: [{ label: 'Novos usuários', data: counts, borderColor: '#5B3B8C', backgroundColor: 'rgba(91,59,140,0.1)', fill: true, tension: 0.3 }] },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+  }
+
+  function renderAssinaturasStatusChart(assinaturas) {
+      const ctx = document.getElementById('assinaturasStatusChart');
+      const porStatus = {};
+      assinaturas.forEach(a => { porStatus[a.status] = (porStatus[a.status] || 0) + 1; });
+      if (__chartAssinStatus) __chartAssinStatus.destroy();
+      __chartAssinStatus = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+              labels: Object.keys(porStatus),
+              datasets: [{ data: Object.values(porStatus), backgroundColor: ['#5B3B8C', '#7C4A9E', '#e05a5a', '#f0b429', '#3949ab'] }]
+          },
+          options: { responsive: true }
+      });
+  }
+
+  function renderTranscricoesPorDiaChart(transcricoes) {
+      const ctx = document.getElementById('transcricoesPorDiaChart');
+      const dias = [];
+      const counts = [];
+      for (let i = 13; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const key = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+          dias.push(key);
+          const count = transcricoes.filter(t => t.criado_em && new Date(t.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) === key).length;
+          counts.push(count);
+      }
+      if (__chartTranscDia) __chartTranscDia.destroy();
+      __chartTranscDia = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: dias, datasets: [{ label: 'Transcrições', data: counts, backgroundColor: '#7C4A9E', borderRadius: 6 }] },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+  }
+
+  function renderChecktoutsPendentes(lista) {
+      const el = document.getElementById('checkoutsPendentesList');
+      if (!lista.length) {
+          el.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Nenhum checkout pendente recente.</div>';
+          return;
+      }
+      el.innerHTML = lista.map(c => `
+          <div class="log-item">
+              <div>
+                  <strong>${escHtml(c.email)}</strong>
+                  <div style="font-size:0.7rem; color:#6c6f85;">${c.criado_em ? new Date(c.criado_em).toLocaleString('pt-BR') : ''} | ciclo: ${c.ciclo}</div>
+              </div>
+              <span class="log-badge ${c.status === 'concluido' ? 'status-ativo' : ''}">${c.status || 'pendente'}</span>
+          </div>
+      `).join('');
+  }
+
+  // ============================================================
+  // ==================== LOGS & AUDITORIA ========================
+  // ============================================================
+  async function carregarLogs() {
+      const el = document.getElementById('logsList');
+      el.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Carregando...</div>';
+
+      const tipo = document.getElementById('logsTipoFilter').value;
+      const nivel = document.getElementById('logsNivelFilter').value;
+      const search = document.getElementById('logsSearchInput').value.trim();
+
+      try {
+          const params = new URLSearchParams({ tipo, nivel });
+          if (search) params.set('q', search);
+
+          const resp = await adminFetch('/api/admin/logs?' + params.toString());
+          const data = resp.data;
+
+          if (!data || !data.length) {
+              el.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Nenhum log encontrado.</div>';
+              return;
+          }
+
+          el.innerHTML = data.map(log => `
+              <div class="log-item">
+                  <div>
+                      <strong>${escHtml(log.descricao)}</strong>
+                      <div style="font-size:0.7rem; color:#6c6f85;">
+                          ${new Date(log.criado_em).toLocaleString('pt-BR')}
+                          ${log.categoria ? ' | ' + escHtml(log.categoria) : ''}
+                          ${log.usuario_id ? ' | usuário: ' + log.usuario_id : ''}
+                      </div>
+                  </div>
+                  <span class="log-badge nivel-${log.nivel}">${log.nivel}</span>
+              </div>
+          `).join('');
+      } catch (err) {
+          console.error(err);
+          el.innerHTML = `<div class="log-item" style="color:#e05a5a;">${escHtml(err.message)}</div>`;
+      }
+  }
+
+  document.getElementById('logsRefreshBtn').addEventListener('click', carregarLogs);
+  document.getElementById('logsSearchInput').addEventListener('keydown', e => { if (e.key === 'Enter') carregarLogs(); });
+  document.getElementById('logsTipoFilter').addEventListener('change', carregarLogs);
+  document.getElementById('logsNivelFilter').addEventListener('change', carregarLogs);
+
+  // ============================================================
+  // ==================== FEATURE FLAGS ===========================
+  // ============================================================
+  let __flagsCache = [];
+
+  async function carregarFlags() {
+      const el = document.getElementById('flagsList');
+      try {
+          const resp = await adminFetch('/api/admin/flags');
+          __flagsCache = resp.data || [];
+          renderFlagsList();
+      } catch (err) {
+          console.error(err);
+          el.innerHTML = `<div class="log-item" style="color:#e05a5a;">${escHtml(err.message)}</div>`;
+      }
+  }
+
+  function renderFlagsList() {
+      const el = document.getElementById('flagsList');
+      if (!__flagsCache.length) {
+          el.innerHTML = '<div class="log-item" style="justify-content:center; color:#888;">Nenhuma flag criada ainda.</div>';
+          return;
+      }
+      el.innerHTML = __flagsCache.map(f => `
+          <div class="flag-card">
+              <div class="flag-card-header">
+                  <div>
+                      <strong>${escHtml(f.nome)}</strong> <span class="flag-key">${escHtml(f.chave)}</span>
+                      <div style="font-size:0.78rem; color:#6c6f85; margin-top:4px;">${escHtml(f.descricao || 'Sem descrição')}</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                      <button class="btn-outline btn-small toggle-overrides-btn" data-id="${f.id}"><i class="fas fa-user-gear"></i> Overrides</button>
+                      <label class="switch">
+                          <input type="checkbox" class="flag-toggle" data-id="${f.id}" ${f.ativo_global ? 'checked' : ''}>
+                          <span class="slider-round"></span>
+                      </label>
+                  </div>
+              </div>
+              <div class="overrides-box" id="overrides-${f.id}">
+                  <div style="display:flex; gap:10px; margin-bottom:10px;">
+                      <input type="email" class="override-email-input" id="override-email-${f.id}" placeholder="email do usuário para override">
+                      <select id="override-ativo-${f.id}" style="padding:0.5rem; border-radius:10px; border:1.5px solid #e2e6ed;">
+                          <option value="true">Ativar para este usuário</option>
+                          <option value="false">Desativar para este usuário</option>
+                      </select>
+                      <button class="btn-outline btn-small add-override-btn" data-id="${f.id}"><i class="fas fa-plus"></i> Adicionar</button>
+                  </div>
+                  <div class="override-chips-container" id="override-chips-${f.id}">Carregando overrides...</div>
+              </div>
+          </div>
+      `).join('');
+
+      el.querySelectorAll('.flag-toggle').forEach(cb => {
+          cb.addEventListener('change', () => toggleFlagGlobal(cb.dataset.id, cb.checked));
+      });
+      el.querySelectorAll('.toggle-overrides-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              const box = document.getElementById('overrides-' + btn.dataset.id);
+              const isOpen = box.classList.toggle('open');
+              if (isOpen) carregarOverrides(btn.dataset.id);
+          });
+      });
+      el.querySelectorAll('.add-override-btn').forEach(btn => {
+          btn.addEventListener('click', () => adicionarOverride(btn.dataset.id));
+      });
+  }
+
+  async function criarFlag() {
+      const sb = getSb();
+      if (!sb) return;
+      const chave = document.getElementById('flagChave').value.trim();
+      const nome = document.getElementById('flagNome').value.trim();
+      const descricao = document.getElementById('flagDescricao').value.trim();
+
+      if (!chave || !nome) {
+          showToast('❌ Preencha ao menos a chave e o nome', 'error');
+          return;
+      }
+
+      try {
+          await adminFetch('/api/admin/flags', {
+              method: 'POST',
+              body: JSON.stringify({ chave, nome, descricao: descricao || null })
+          });
+          showToast('✅ Flag criada!', 'success');
+          document.getElementById('flagChave').value = '';
+          document.getElementById('flagNome').value = '';
+          document.getElementById('flagDescricao').value = '';
+          await carregarFlags();
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  async function toggleFlagGlobal(flagId, novoValor) {
+      try {
+          await adminFetch('/api/admin/flags', {
+              method: 'PATCH',
+              body: JSON.stringify({ id: flagId, ativo_global: novoValor })
+          });
+          const flag = __flagsCache.find(f => f.id === flagId);
+          showToast(`${novoValor ? '✅ Ativada' : '⏸️ Desativada'} globalmente: ${flag ? flag.chave : flagId}`, 'success');
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  async function carregarOverrides(flagId) {
+      const container = document.getElementById('override-chips-' + flagId);
+      try {
+          const resp = await adminFetch('/api/admin/flags-overrides?flag_id=' + encodeURIComponent(flagId));
+          const data = resp.data;
+
+          if (!data || !data.length) {
+              container.innerHTML = '<span style="color:#888; font-size:0.78rem;">Nenhum override para esta flag.</span>';
+              return;
+          }
+
+          container.innerHTML = data.map(o => `
+              <span class="override-chip">
+                  ${escHtml(o.usuarios ? (o.usuarios.email || o.usuarios.nome) : o.usuario_id)} — ${o.ativo ? 'ligado' : 'desligado'}
+                  <button data-override-id="${o.id}" data-flag-id="${flagId}" class="remove-override-btn"><i class="fas fa-times"></i></button>
+              </span>
+          `).join('');
+
+          container.querySelectorAll('.remove-override-btn').forEach(btn => {
+              btn.addEventListener('click', () => removerOverride(btn.dataset.overrideId, btn.dataset.flagId));
+          });
+      } catch (err) {
+          console.error(err);
+          container.innerHTML = `<span style="color:#e05a5a; font-size:0.78rem;">${escHtml(err.message)}</span>`;
+      }
+  }
+
+  async function adicionarOverride(flagId) {
+      const emailInput = document.getElementById('override-email-' + flagId);
+      const ativoSelect = document.getElementById('override-ativo-' + flagId);
+      const email = emailInput.value.trim();
+      if (!email) { showToast('❌ Informe o email do usuário', 'error'); return; }
+
+      try {
+          await adminFetch('/api/admin/flags-overrides', {
+              method: 'POST',
+              body: JSON.stringify({ flag_id: flagId, email, ativo: ativoSelect.value === 'true' })
+          });
+          showToast('✅ Override adicionado', 'success');
+          emailInput.value = '';
+          await carregarOverrides(flagId);
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  async function removerOverride(overrideId, flagId) {
+      try {
+          await adminFetch('/api/admin/flags-overrides?id=' + encodeURIComponent(overrideId), { method: 'DELETE' });
+          showToast('🗑️ Override removido', 'success');
+          await carregarOverrides(flagId);
+      } catch (err) {
+          console.error(err);
+          showToast('❌ ' + err.message, 'error');
+      }
+  }
+
+  document.getElementById('criarFlagBtn').addEventListener('click', criarFlag);
+
+</script>
+</body>
+</html>

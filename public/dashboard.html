@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TranscreveAI | Painel Central</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="icon" href="assets/robo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="assets/styles/dashboard.css">
+</head>
+<body>
+<div class="dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">T<span>ranscreveAI</span>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu"><i class="fas fa-xmark"></i></button>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a class="nav-link active" data-tab="dashboard"><i class="fas fa-chart-line"></i><span>Início</span></a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-tab="meetings"><i
+                    class="fas fa-microphone"></i><span>Agendamentos</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="transcripts"><i class="fas fa-file-alt"></i><span>Transcrições</span></a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-tab="insights"><i
+                    class="fas fa-brain"></i><span>Insights</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="theo"><i
+                    class="fas fa-comments"></i><span>Theo</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="team"><i class="fas fa-users"></i><span>Time</span></a>
+            </li>
+            <li class="nav-item" id="navSupervisao" style="display:none;">
+                <a class="nav-link" data-tab="supervisao">
+                    <i class="fas fa-user-shield"></i><span>Supervisão</span>
+                </a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-tab="atividades"><i class="fas fa-list-check"></i><span>Atividades</span></a>
+            </li>
+            <li class="nav-item"><a class="nav-link" data-tab="settings"><i class="fas fa-cog"></i><span>Configurações</span></a>
+            </li>
+        </ul>
+        <div class="user-section">
+            <div class="user-avatar">...</div>
+            <div class="user-details"><strong>Carregando...</strong><small style="color:var(--text-secondary);">—</small></div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="page-title"><h1 id="pageTitle">Dashboard</h1>
+                <p id="pageSubtitle">Bem vindo de volta! Aqui está a inteligência da sua reunião</p></div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <div class="notification-btn" id="notificationBtn"><i class="fas fa-bell"></i><span
+                        class="notification-badge" id="notificationCount">3</span></div>
+                <button class="btn-new" id="newMeetingBtn"><i class="fas fa-plus"></i> Novo Agendamento</button>
+            </div>
+        </div>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header"><span><i class="fas fa-bell"></i> Notifications</span><span
+                    class="clear-all" id="clearAllNotif">Clear all</span></div>
+            <div class="notification-tabs">
+                <div class="notification-tab active" data-notif-tab="all">All</div>
+                <div class="notification-tab" data-notif-tab="unread">Unread</div>
+            </div>
+            <div class="notification-list" id="notificationList"></div>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="content-panel active" id="dashboardPanel">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+                    </div>
+                    <div class="stat-value" id="totalMeetings">0</div>
+                    <div class="stat-label">Total Agendamentos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    </div>
+                    <div class="stat-value" id="totalHours">0</div>
+                    <div class="stat-label">Horas Transcritas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    </div>
+                    <div class="stat-value" id="totalInsights">0</div>
+                    <div class="stat-label">AI Insights</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-robot"></i></div>
+                    </div>
+                    <div class="stat-value">98<span style="font-size:1rem;">%</span></div>
+                    <div class="stat-label">AI Accuracy</div>
+                </div>
+            </div>
+            <div class="charts-row">
+                <div class="chart-card"><h3>📈 Tendência de reuniões</h3>
+                    <canvas id="meetingsChart"></canvas>
+                </div>
+                <div class="chart-card"><h3>⏱️ Horas Transcritas</h3>
+                    <canvas id="hoursChart"></canvas>
+                </div>
+            </div>
+            <div class="meetings-section">
+                <div class="section-header"><h3>📋 Reuniões Recentes</h3></div>
+                <div id="meetingList"></div>
+            </div>
+        </div>
+
+        <!-- Meetings Panel -->
+        <div class="content-panel" id="meetingsPanel">
+            <div class="meetings-section">
+                <div class="section-header"><h3>📋 Todos Agendamentos</h3>
+                    <button class="btn-new" id="exportAllBtn"
+                            style="background:var(--border); color:var(--text-primary);"><i class="fas fa-download"></i>
+                        Exportar CSV
+                    </button>
+                </div>
+                <div id="allMeetingsList"></div>
+            </div>
+        </div>
+
+        <!-- Transcripts Panel -->
+        <div class="content-panel" id="transcriptsPanel">
+            <div class="transcripts-section">
+                <div class="section-header">
+                    <h3>📄 Transcrições Recentes</h3>
+
+                    <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="searchTranscript" placeholder="Search transcripts..."
+                               style="padding:0.5rem 1rem; border-radius:12px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary);">
+
+                        <button class="btn-new" id="transcribeAudioBtn" type="button">
+                            <i class="fas fa-microphone-lines"></i> Transcrever Áudio
+                        </button>
+                        <input type="file" id="audioFileInput" accept="audio/*,video/mp4,video/webm" hidden>
+                    </div>
+                </div>
+
+                <!-- Progresso do upload/transcrição -->
+                <div id="audioUploadStatus" class="upload-status" style="display:none;">
+                    <div class="upload-status-row">
+                        <i class="fas fa-microphone-lines"></i>
+                        <span id="audioUploadFileName">Enviando áudio...</span>
+                        <span id="audioUploadPercent">0%</span>
+                    </div>
+                    <div class="upload-progress-bar">
+                        <div class="upload-progress-fill" id="audioUploadFill"></div>
+                    </div>
+                </div>
+
+                <div id="transcriptsList"></div>
+
+                <!-- Paginação (reaproveita .meeting-pagination / .page-btn já usados em outras listas) -->
+                <div id="transcriptsPagination" class="meeting-pagination"></div>
+            </div>
+        </div>
+
+        <!-- Insights Panel -->
+        <div class="content-panel" id="insightsPanel">
+            <div class="meetings-section">
+                <div id="insightsList"></div>
+            </div>
+        </div>
+
+        <!-- Theo Panel (agente global — todas as reuniões) -->
+        <div class="content-panel" id="theoPanel">
+            <div id="theoGlobalContainer"></div>
+        </div>
+
+        <!-- Team Panel -->
+        <div class="content-panel" id="teamPanel">
+
+            <div class="team-header">
+
+
+                <button
+                        class="btn-new"
+                        id="inviteBtn"
+                >
+                    <i class="fas fa-user-plus"></i>
+                    Convidar
+                </button>
+
+            </div>
+
+
+            <div class="team-overview">
+
+                <div class="team-stat">
+                    <span id="membersCount">0</span>
+                    <small>Membros</small>
+                </div>
+
+                <div class="team-stat">
+                    <span id="teamMeetings">0</span>
+                    <small>Reuniões</small>
+                </div>
+
+                <div class="team-stat">
+                    <span id="teamHours">0h</span>
+                    <small>Horas</small>
+                </div>
+
+                <div class="team-stat">
+                    <span id="teamInsights">0</span>
+                    <small>Insights</small>
+                </div>
+
+            </div>
+
+
+            <div class="team-toolbar">
+
+                <input
+                        type="text"
+                        id="teamSearch"
+                        placeholder="Buscar membro..."
+                >
+
+                <select id="teamFilter">
+
+                    <option value="all">
+                        Todos
+                    </option>
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+                    <option value="editor">
+                        Editor
+                    </option>
+
+                    <option value="viewer">
+                        Viewer
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                    class="team-grid"
+                    id="teamList"
+            ></div>
+
+        </div>
+
+        <!-- Supervisão Panel (somente admin — visibilidade controlada por assets/js/supervisao.js) -->
+        <div class="content-panel" id="supervisaoPanel">
+
+            <!-- Alertas -->
+            <div class="supervisao-section" id="supervisaoAlertasSection">
+                <h4><i class="fas fa-triangle-exclamation"></i> Alertas</h4>
+                <div id="supervisaoAlertas" class="supervisao-alertas-list"></div>
+            </div>
+
+            <!-- Destaques -->
+            <div class="supervisao-section" id="supervisaoDestaquesSection">
+                <h4><i class="fas fa-star"></i> Destaques da equipe</h4>
+                <div id="supervisaoDestaques" class="supervisao-destaques-list"></div>
+            </div>
+
+            <!-- Gráfico comparativo -->
+            <div class="supervisao-section">
+                <h4><i class="fas fa-chart-column"></i> Comparativo da equipe (últimos 30 dias)</h4>
+                <div class="supervisao-chart-wrapper">
+                    <canvas id="supervisaoChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Ranking -->
+            <div class="supervisao-section">
+                <h4><i class="fas fa-ranking-star"></i> Desempenho por membro</h4>
+                <div class="supervisao-table-wrapper">
+                    <table class="supervisao-table" id="supervisaoRankingTable">
+                        <thead>
+                        <tr>
+                            <th>Membro</th>
+                            <th>Score</th>
+                            <th>Reuniões (30d)</th>
+                            <th>Horas (30d)</th>
+                            <th>Ativ. no prazo</th>
+                            <th>Atrasadas</th>
+                        </tr>
+                        </thead>
+                        <tbody id="supervisaoRankingBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reuniões recentes -->
+            <div class="supervisao-section">
+                <h4><i class="fas fa-clipboard-list"></i> Reuniões recentes da equipe</h4>
+                <div id="supervisaoReunioes" class="supervisao-reunioes-list"></div>
+            </div>
+
+        </div>
+
+        <!-- Atividades Panel (Kanban) -->
+        <div class="content-panel" id="atividadesPanel">
+            <div class="kanban-header">
+                <h3><i class="fas fa-list-check"></i> Atividades</h3>
+                <button class="btn-new" id="novaAtividadeBtn">
+                    <i class="fas fa-plus"></i> Nova Atividade
+                </button>
+            </div>
+
+            <div class="kanban-board">
+                <div class="kanban-column" data-status="pendente">
+                    <div class="kanban-column-header">
+                        <span>Pendente</span>
+                        <span class="kanban-count" id="countPendente">0</span>
+                    </div>
+                    <div class="kanban-cards" id="colPendente"></div>
+                </div>
+
+                <div class="kanban-column" data-status="em_andamento">
+                    <div class="kanban-column-header">
+                        <span>Em andamento</span>
+                        <span class="kanban-count" id="countEmAndamento">0</span>
+                    </div>
+                    <div class="kanban-cards" id="colEmAndamento"></div>
+                </div>
+
+                <div class="kanban-column" data-status="concluido">
+                    <div class="kanban-column-header">
+                        <span>Concluído</span>
+                        <span class="kanban-count" id="countConcluido">0</span>
+                    </div>
+                    <div class="kanban-cards" id="colConcluido"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="content-panel" id="settingsPanel">
+
+            <div class="settings-section">
+
+                <!-- PERFIL -->
+                <div class="settings-group">
+
+                    <h3>
+                        <i class="fas fa-user-circle"></i>
+                        Perfil
+                    </h3>
+
+
+                    <!-- FOTO -->
+                    <div class="profile-photo-section">
+
+                        <div class="profile-photo-wrapper">
+
+                            <img
+                                    id="profilePreview"
+                                    class="profile-avatar-large"
+                                    src="assets/default-avatar.png"
+                                    alt="Foto de perfil"
+                            >
+
+                            <label
+                                    for="profilePhoto"
+                                    class="change-photo-btn"
+                            >
+
+                                <i class="fas fa-camera"></i>
+                                Alterar foto
+
+                            </label>
+
+                            <input
+                                    type="file"
+                                    id="profilePhoto"
+                                    accept="image/*"
+                                    hidden
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- NOME -->
+                    <div class="setting-row">
+
+                        <div class="setting-info">
+
+                            <h4>Nome</h4>
+
+                            <p>
+                                Nome exibido na plataforma
+                            </p>
+
+                        </div>
+
+                        <input
+                                class="setting-input"
+                                id="profileName"
+                                placeholder="Digite seu nome"
+                        >
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+                    <div class="setting-row">
+
+                        <div class="setting-info">
+
+                            <h4>Email</h4>
+
+                            <p>
+                                Usado para login e comunicação
+                            </p>
+
+                        </div>
+
+                        <input
+                                class="setting-input"
+                                type="email"
+                                id="profileEmail"
+                                placeholder="Digite seu email"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- INTEGRAÇÕES -->
+                <div class="settings-group">
+
+                    <h3>
+
+                        <i class="fas fa-plug"></i>
+
+                        Integrações
+
+                    </h3>
+
+
+                    <div class="setting-row">
+
+                        <div class="setting-info">
+
+                            <h4>Google Calendar</h4>
+
+                            <p>
+                                Sincronize reuniões automaticamente
+                            </p>
+
+                        </div>
+
+                        <button
+                                type="button"
+                                class="btn-google"
+                                id="googleAuthBtn"
+                        >
+
+                            <i class="fab fa-google"></i>
+
+                            Conectar
+
+                        </button>
+
+                    </div>
+
+                    <div class="setting-row">
+
+                        <div class="setting-info">
+
+                            <h4>Extensão para o Chrome</h4>
+
+                            <p>
+                                Transcreva reuniões diretamente do seu navegador
+                            </p>
+
+                        </div>
+
+                        <a
+                                href="https://chromewebstore.google.com/detail/transcreveai-reuni%C3%B5es-em/pgcllgiibjbikdcgbjepilfhaimcehpc?hl=pt-br"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn-new"
+                                style="text-decoration:none;"
+                        >
+                            <i class="fab fa-chrome"></i>
+                            Instalar extensão
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PLANO -->
+                <div class="settings-group">
+
+                    <h3>
+                        <i class="fas fa-crown"></i>
+                        Plano
+                    </h3>
+
+                    <div class="setting-row">
+
+                        <div class="setting-info">
+
+                            <h4>Plano atual</h4>
+
+                            <p id="planoAtualDescricao">Carregando...</p>
+
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:12px;">
+
+                            <span
+                                    id="planoAtualBadge"
+                                    style="background:var(--primary); color:white; padding:0.4rem 1rem; border-radius:20px; font-weight:600; font-size:0.85rem;"
+                            >
+                                —
+                            </span>
+
+                            <a
+                                    href="checkout.html"
+                                    class="btn-new"
+                                    style="text-decoration:none;"
+                            >
+                                <i class="fas fa-arrow-up"></i>
+                                Mudar plano
+                            </a>
+
+                            <div id="acoesPlano"></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SEGURANÇA / TROCAR SENHA -->
+                <div class="settings-group">
+
+                    <h3>
+                        <i class="fas fa-lock"></i>
+                        Segurança
+                    </h3>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h4>Senha atual</h4>
+                            <p>Confirme quem você é pra trocar a senha</p>
+                        </div>
+                        <input
+                                class="setting-input"
+                                type="password"
+                                id="senhaAtualInput"
+                                placeholder="Digite sua senha atual"
+                                autocomplete="current-password"
+                        >
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h4>Nova senha</h4>
+                            <p>Mínimo de 8 caracteres</p>
+                        </div>
+                        <input
+                                class="setting-input"
+                                type="password"
+                                id="novaSenhaInput"
+                                placeholder="Digite a nova senha"
+                                autocomplete="new-password"
+                        >
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <h4>Confirmar nova senha</h4>
+                            <p>Repita a nova senha</p>
+                        </div>
+                        <input
+                                class="setting-input"
+                                type="password"
+                                id="confirmarNovaSenhaInput"
+                                placeholder="Repita a nova senha"
+                                autocomplete="new-password"
+                        >
+                    </div>
+
+                    <div class="settings-actions">
+                        <button class="btn-new" id="trocarSenhaBtn">
+                            <i class="fas fa-key"></i>
+                            Alterar senha
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- SALVAR -->
+                <div class="settings-actions">
+
+                    <button
+                            class="btn-new"
+                            id="saveSettingsBtn"
+                    >
+
+                        <i class="fas fa-save"></i>
+
+                        Salvar alterações
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- MODAL COM ESTRUTURA MELHORADA -->
+<div class="modal" id="meetingModal">
+    <div class="modal-content">
+        <h2><i class="fas fa-calendar-plus"></i> Agendar Nova Reunião</h2>
+        <div class="modal-subtitle">
+            <i class="fas fa-magic"></i> Preencha os dados para agendar sua reunião
+        </div>
+
+        <!-- Título -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-tag"></i> Título da reunião <span style="color: var(--danger);">*</span>
+            </div>
+            <input type="text" id="modalTitle" placeholder="Ex: Reunião de alinhamento - Projeto X">
+            <div id="titleHint" style="display: none;">
+                <i class="fas fa-lightbulb"></i> Use um título claro e objetivo
+            </div>
+        </div>
+
+        <!-- Descrição -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-align-left"></i> Descrição
+            </div>
+            <textarea id="modalDescricao" rows="3" placeholder="Pauta, contexto ou observações (opcional)"></textarea>
+        </div>
+
+        <!-- Data e horário -->
+        <div class="date-section-title">
+            <i class="fas fa-calendar-alt"></i> Data e horário
+        </div>
+
+        <div class="modal-row">
+            <div>
+                <div class="form-label">
+                    <i class="fas fa-play-circle"></i> Início
+                </div>
+                <input type="datetime-local" id="modalDate" placeholder="Data e hora de início">
+                <div id="dateHint" style="font-size: 0.7rem; margin-top: 0.25rem;"></div>
+            </div>
+            <div>
+                <div class="form-label">
+                    <i class="fas fa-stop-circle"></i> Término
+                </div>
+                <input type="datetime-local" id="modalEndDate" placeholder="Data e hora de término">
+                <div id="endDateHint" style="font-size: 0.7rem; margin-top: 0.25rem;"></div>
+            </div>
+        </div>
+
+        <!-- Botões de duração rápida -->
+        <div class="quick-dates">
+            <button type="button" class="quick-duration" data-minutes="30">+30 min</button>
+            <button type="button" class="quick-duration" data-minutes="60">+1 hora</button>
+            <button type="button" class="quick-duration" data-minutes="90">+1h30</button>
+            <button type="button" class="quick-duration" data-minutes="120">+2 horas</button>
+            <button type="button" class="quick-duration" data-minutes="180">+3 horas</button>
+        </div>
+
+        <!-- Google Meet -->
+        <div class="form-group">
+            <label class="toggle-row" for="modalCriarMeet">
+                <span class="form-label" style="margin:0;">
+                    <i class="fas fa-video"></i> Criar link do Google Meet
+                </span>
+                <span class="toggle-switch">
+                    <input type="checkbox" id="modalCriarMeet" checked>
+                    <span class="toggle-slider"></span>
+                </span>
+            </label>
+        </div>
+
+        <!-- Convidados -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-user-friends"></i> Convidados
+            </div>
+            <div class="input-with-icon">
+                <i class="fas fa-envelope"></i>
+                <input type="text" id="modalConvidados" placeholder="Digite o email e pressione Enter ou vírgula">
+            </div>
+            <div id="convidadosChips" class="chips-container"></div>
+        </div>
+
+        <!-- Plataforma -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-video"></i> Plataforma
+            </div>
+            <select id="modalPlatform">
+                <option value="zoom">🎥 Zoom</option>
+                <option value="meet">💚 Google Meet</option>
+                <option value="teams">💙 Microsoft Teams</option>
+            </select>
+        </div>
+
+        <!-- Link manual -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-link"></i> Link da reunião (manual)
+            </div>
+            <div class="input-with-icon">
+                <i class="fas fa-link"></i>
+                <input type="url" id="modalLink" placeholder="https://... (opcional — ignorado se o Meet estiver ativado)">
+            </div>
+            <div id="linkSuggestion" style="display: none;">
+                <i class="fas fa-magic"></i> Link sugerido: <span id="suggestedLinkText"></span>
+            </div>
+        </div>
+
+        <!-- Anexo -->
+        <div class="form-group">
+            <div class="form-label">
+                <i class="fas fa-paperclip"></i> Anexo (link do Google Drive)
+            </div>
+            <div class="input-with-icon">
+                <i class="fas fa-link"></i>
+                <input type="url" id="modalAnexoUrl" placeholder="https://drive.google.com/... (opcional)">
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelModal">Cancelar</button>
+            <button class="btn-save" id="saveMeeting">
+                <i class="fas fa-calendar-check"></i> Agendar Reunião
+            </button>
+        </div>
+    </div>
+</div>
+<!-- MODAL DE CONVITE -->
+<div class="modal" id="inviteModal">
+
+    <div class="modal-content">
+
+        <h2>
+            <i class="fas fa-user-plus"></i>
+            Convidar membro
+        </h2>
+
+        <p class="modal-subtitle">Adicione pessoas ao workspace</p>
+
+        <div class="form-group">
+            <div class="form-label">Email</div>
+
+            <input
+                    type="email"
+                    id="inviteEmail"
+                    placeholder="nome@empresa.com"
+            >
+        </div>
+
+        <div class="form-group">
+
+            <div class="form-label">Permissão</div>
+
+            <select id="inviteRole">
+                <option value="viewer">👁️ Viewer</option>
+                <option value="editor">✏️ Editor</option>
+                <option value="admin">🛡️ Admin</option>
+            </select>
+
+        </div>
+
+        <div class="modal-buttons">
+
+            <button
+                    class="btn-cancel"
+                    id="closeInvite"
+            >
+                Cancelar
+            </button>
+
+            <button
+                    class="btn-save"
+                    id="sendInvite"
+            >
+                <i class="fas fa-paper-plane"></i>
+                Enviar convite
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MEMBER DRAWER (FORA DO MODAL) -->
+<div
+        class="member-drawer"
+        id="memberDrawer"
+>
+
+    <div class="drawer-content">
+
+        <button
+                id="closeDrawer"
+                class="close-drawer"
+        >
+            ×
+        </button>
+
+        <div id="memberDetails"></div>
+
+    </div>
+
+</div>
+
+<!-- MODAL NOVA/EDITAR ATIVIDADE -->
+<div class="modal" id="atividadeModal">
+    <div class="modal-content">
+        <h2 id="atividadeModalTitulo"><i class="fas fa-list-check"></i> Nova Atividade</h2>
+
+        <input type="hidden" id="atividadeId" value="">
+
+        <div class="form-group">
+            <div class="form-label"><i class="fas fa-tag"></i> Título <span style="color: var(--danger);">*</span></div>
+            <input type="text" id="atividadeTitulo" placeholder="Ex: Enviar proposta pro cliente X">
+        </div>
+
+        <div class="form-group">
+            <div class="form-label"><i class="fas fa-align-left"></i> Descrição</div>
+            <textarea id="atividadeDescricao" rows="3" placeholder="Detalhes (opcional)"></textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="form-label"><i class="fas fa-user"></i> Responsável</div>
+            <select id="atividadeResponsavel">
+                <option value="">Eu mesmo</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <div class="form-label"><i class="fas fa-calendar-alt"></i> Prazo</div>
+            <input type="datetime-local" id="atividadePrazo">
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="deleteAtividadeBtn" style="display:none; border-color: var(--danger); color: var(--danger);">
+                <i class="fas fa-trash"></i> Excluir
+            </button>
+            <button class="btn-cancel" id="cancelAtividadeModal">Cancelar</button>
+            <button class="btn-save" id="saveAtividade">
+                <i class="fas fa-check"></i> Criar Atividade
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE MÍDIA DE BOAS-VINDAS -->
+<div class="welcome-media-overlay" id="welcomeMediaOverlay">
+    <div class="welcome-media-box">
+        <button class="welcome-media-close" id="welcomeMediaClose" aria-label="Fechar">
+            <i class="fas fa-xmark"></i>
+        </button>
+        <div id="welcomeMediaContent"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="assets/js/supabaseClient.js"></script>
+
+<script src="assets/js/banner-display.js"></script>
+<script src="assets/js/welcome-media.js"></script>
+<script src="assets/js/estado.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/google.js"></script>
+<script src="assets/js/perfil.js"></script>
+<script src="assets/js/reunioes.js"></script>
+<script src="assets/js/transcricoes.js"></script>
+<script src="assets/js/graficos.js"></script>
+<script src="assets/js/validacao-modal.js"></script>
+<script src="assets/js/theo-global.js"></script>
+<script src="assets/js/theo-floating.js"></script>
+<script src="assets/js/sidebar-mobile.js"></script>
+<script src="assets/js/atividades.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/notifications.js"></script>
+<script src="assets/js/team.js"></script>
+<script src="assets/js/supervisao.js"></script>
+<script type="module" src="assets/js/settings.js"></script>
+
+</body>
+</html>

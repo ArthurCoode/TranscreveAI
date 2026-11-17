@@ -1,0 +1,42 @@
+# robots.txt — transcreveia.com
+# Permite indexação de páginas públicas. Bloqueia áreas privadas/autenticadas.
+
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /app
+Disallow: /admin
+Disallow: /login.html
+Disallow: /cadastro
+Disallow: /checkout.html
+Disallow: /api/
+Disallow: /*?*token=
+Disallow: /*?*session=
+
+# Crawlers de IA / GEO — mantidos liberados de propósito, para permitir
+# que assistentes de IA leiam e citem o conteúdo público do site.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://transcreveia.com/sitemap.xml

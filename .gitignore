@@ -1,0 +1,17 @@
+# dependências e build
+node_modules/
+.next/
+out/
+
+# variáveis de ambiente — NUNCA versionar valores reais
+.env
+.env.*
+!.env.example
+
+# deploy / IDE / SO
+.vercel
+.idea/
+.vscode/
+*.log
+.DS_Store
+Thumbs.db

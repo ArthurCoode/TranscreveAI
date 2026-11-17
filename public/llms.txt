@@ -1,0 +1,67 @@
+# TranscreveAI
+
+> TranscreveAI é uma plataforma de inteligência artificial para reuniões. Ela grava, transcreve e organiza reuniões do Zoom, Google Meet e Microsoft Teams, transformando cada conversa em resumos, decisões e tarefas pesquisáveis através do assistente Theo.
+
+## O que é
+
+TranscreveAI é um SaaS (software como serviço) que conecta-se às ferramentas de videoconferência mais usadas por equipes — Zoom, Google Meet e Microsoft Teams — e transforma cada reunião em conteúdo estruturado e pesquisável: transcrição, resumo, decisões tomadas e tarefas atribuídas.
+
+## Problema resolvido
+
+Reuniões geram decisões, tarefas e conhecimento que costumam se perder: ninguém lembra quem ficou responsável por algo, decisões somem entre um chat e outro, e encontrar o que foi combinado em uma reunião passada exige reabrir gravações inteiras ou perguntar de novo para o time. TranscreveAI resolve isso registrando e organizando automaticamente o que acontece em cada reunião, e disponibilizando esse histórico para consulta a qualquer momento.
+
+## Como funciona
+
+1. Reunião — acontece normalmente no Google Meet
+2. Transcrição — a fala da reunião é convertida em texto automaticamente.
+3. Processamento por IA — o conteúdo é analisado para extrair contexto, decisões e responsáveis.
+4. Resumo — é gerado um resumo com os principais pontos da reunião.
+5. Decisões — o que foi decidido fica registrado e associado à reunião de origem.
+6. Tarefas — ações e responsáveis identificados na conversa são listados.
+7. Histórico — cada reunião processada fica armazenada e organizada na conta da empresa.
+8. Pesquisa — o histórico pode ser consultado a qualquer momento.
+9. Interação com Theo — em vez de vasculhar manualmente o histórico, o usuário pergunta em texto livre ao assistente Theo, que responde com base nas reuniões reais da empresa e cita a reunião de origem.
+
+## Theo
+
+Theo é o assistente de IA do TranscreveAI. Ele tem acesso ao histórico de reuniões processadas pela conta do usuário e responde perguntas em linguagem natural sobre o que foi decidido, quem ficou responsável por uma tarefa e em qual reunião algo foi combinado — sempre citando a reunião de origem da resposta.
+
+## Recursos
+
+- Gravação e transcrição automática de reuniões (Google Meet)
+- Resumo automático de cada reunião
+- Identificação de decisões tomadas
+- Identificação de tarefas e responsáveis
+- Histórico de reuniões pesquisável
+- Assistente de IA (Theo) para consulta em linguagem natural, com citação da fonte
+- Exportação de conteúdo em TXT (todos os planos) e PDF (planos pagos)
+
+## Plataformas compatíveis
+
+- Google Meet
+
+## Planos
+
+| Plano | Preço | Cota de minutos/mês | Usuários |
+|---|---|---|---|
+| Gratuito | R$ 0,00 | 400 min (~9 reuniões) | 1 |
+| Starter | R$ 14,90/mês | 800 min (~18 reuniões) | 1 |
+| Individual | R$ 24,90/mês | 1.600 min (~36 reuniões) | 1 |
+| Escritório | R$ 69,90/mês | 8.000 min (~178 reuniões) | até 5 |
+| Empresarial | R$ 249,90/mês | 32.000 min (~711 reuniões) | até 20 |
+
+Os planos Starter, Escritório e Empresarial cobram excedente por minuto além da cota mensal. O plano Gratuito e o plano Individual não têm cobrança de excedente divulgada publicamente.
+
+## Site oficial
+
+https://transcreveia.com/
+
+## Páginas relevantes
+
+- Início: https://transcreveia.com/
+- O que é o TranscreveAI: https://transcreveia.com/o-que-e-transcreveai/
+- IA para reuniões: https://transcreveia.com/ia-para-reunioes/
+
+## Contato
+
+E-mail: contato@transcreveia.com

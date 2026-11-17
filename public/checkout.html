@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Checkout | TranscreveAI - Planos e Assinatura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="assets/robo.ico" type="image/x-icon">
+    <!-- SDK do Mercado Pago (tokenização segura de cartão via Card Brick) -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e9eef3;
+            --primary: #5B3B8C;
+            --primary-light: #8B5CF6;
+            --primary-dark: #4c2d7a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body.dark {
+            --bg-primary: #0a0c10;
+            --bg-secondary: #11131a;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #1e222d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-decoration: none;
+        }
+
+        .header-badge {
+            background: var(--bg-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .checkout-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .plan-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .billing-toggle {
+            display: flex;
+            background: var(--bg-primary);
+            border-radius: 40px;
+            padding: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .billing-option {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .billing-option.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .pricing-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pricing-card {
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(91, 59, 140, 0.1);
+        }
+
+        .pricing-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(91, 59, 140, 0.08), rgba(139, 92, 246, 0.03));
+            box-shadow: 0 8px 25px rgba(91, 59, 140, 0.15);
+        }
+
+        .pricing-card.popular {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(91, 59, 140, 0.05), rgba(139, 92, 246, 0.02));
+        }
+
+        .pricing-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .price span {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .plan-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-features i {
+            color: var(--success);
+            font-size: 0.8rem;
+        }
+
+        .free-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .payment-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .payment-method {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .payment-method.active {
+            border-color: var(--primary);
+            background: rgba(91, 59, 140, 0.08);
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .order-summary {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row.total {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding-top: 1rem;
+        }
+
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .btn-pay {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            padding: 1rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1rem;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(91, 59, 140, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .payment-panel {
+            display: none;
+        }
+
+        .payment-panel.active {
+            display: block;
+        }
+
+        .pix-area {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .pix-qr {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            margin: 1rem auto;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary);
+            overflow: hidden;
+        }
+
+        .pix-qr img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .pix-code {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 14px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            word-break: break-all;
+        }
+
+        .btn-coupon {
+            background: var(--border);
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 32px;
+            max-width: 400px;
+            width: 90%;
+            padding: 2rem;
+            text-align: center;
+            animation: modalFade 0.2s ease;
+        }
+
+        .modal-content i {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            z-index: 1100;
+            animation: slideIn 0.3s ease;
+            color: var(--text-primary);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 1000px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .payment-section {
+                position: static;
+            }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #cardPanel {
+            min-height: 300px;
+        }
+
+        .mp-secure-field {
+            height: 44px;
+            padding: 0.3rem 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">TranscreveAI</div>
+    <div class="header-badge">
+        <i class="fas fa-shield-alt"></i> Ambiente seguro
+    </div>
+</div>
+
+<div class="checkout-container">
+    <div class="checkout-grid">
+        <!-- Left Column - Plan Selection -->
+        <div>
+            <div class="plan-section">
+                <div class="section-title">
+                    <i class="fas fa-crown" style="color: var(--warning);"></i>
+                    Escolha seu plano
+                </div>
+
+                <div class="billing-toggle">
+                    <div class="billing-option active" data-billing="monthly">Mensal</div>
+                    <div class="billing-option" data-billing="yearly">Anual <span style="font-size:0.7rem;">(Economize 20%)</span></div>
+                </div>
+
+                <!-- Cards gerados dinamicamente via /api/planos -->
+                <div class="pricing-grid" id="pricingGrid">
+                    <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin"></i> Carregando planos...
+                    </div>
+                </div>
+
+                <div style="font-size:0.7rem; text-align:center; margin-top:1rem; color:var(--text-muted);">
+                    <i class="fas fa-lock"></i> Todos os planos incluem SSL Secure e suporte 24/7
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Payment -->
+        <div>
+            <div class="payment-section">
+                <div class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    Dados de pagamento
+                </div>
+
+                <!-- E-mail (necessário pra criar a conta após confirmação do pagamento) -->
+                <div class="form-group">
+                    <label>Nome completo</label>
+                    <input type="text" id="userName" placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="userEmail" placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>CPF/CNPJ <span style="font-weight:400; color:var(--text-muted);">(necessário para Cartão, Pix e Boleto)</span></label>
+                    <input type="text" id="userDocument" placeholder="123.456.789-00" maxlength="18">
+                </div>
+
+                <div class="payment-methods">
+                    <div class="payment-method active" data-method="card">
+                        <i class="fas fa-credit-card"></i> Cartão
+                    </div>
+                    <div class="payment-method" data-method="pix">
+                        <i class="fas fa-qrcode"></i> Pix
+                    </div>
+                    <div class="payment-method" data-method="boleto">
+                        <i class="fas fa-barcode"></i> Boleto
+                    </div>
+                </div>
+
+                <!-- Card Payment Panel: Secure Fields (tokenização sem depender da consulta de BIN) -->
+                <div class="payment-panel active" id="cardPanel">
+                    <div class="form-group">
+                        <label>Número do cartão</label>
+                        <div id="secureCardNumber" class="mp-secure-field"></div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Validade</label>
+                            <div id="secureExpirationDate" class="mp-secure-field"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <div id="secureSecurityCode" class="mp-secure-field"></div>
+                        </div>
+                    </div>
+                    <button class="btn-pay" id="cardSubmitBtn"><i class="fas fa-lock"></i> Pagar com cartão</button>
+                </div>
+
+                <!-- Pix Payment Panel -->
+                <div class="payment-panel" id="pixPanel">
+                    <div class="pix-area">
+                        <div class="pix-qr" id="pixQrContainer">
+                            <i class="fas fa-qrcode" style="font-size: 5rem;"></i>
+                        </div>
+                        <div class="pix-code">
+                            <code id="pixCodeText">Clique em "Gerar Pix" pra criar o código</code>
+                        </div>
+                        <button class="btn-coupon" id="generatePixBtn" style="margin-top:0.5rem;"><i class="fas fa-qrcode"></i> Gerar Pix</button>
+                        <button class="btn-coupon" id="copyPixBtn" style="margin-top:0.5rem; display:none;"><i class="fas fa-copy"></i> Copiar código</button>
+                    </div>
+                </div>
+
+                <!-- Boleto Payment Panel -->
+                <div class="payment-panel" id="boletoPanel">
+                    <div class="boleto-area" style="text-align:center; padding:1rem;">
+                        <i class="fas fa-barcode" style="font-size: 4rem; color: var(--primary);"></i>
+                        <p style="margin: 1rem 0;">Gere seu boleto bancário e pague em até 3 dias úteis</p>
+                    </div>
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" id="enderecoCep" placeholder="00000-000" maxlength="9">
+                    </div>
+                    <div class="row-2" style="display:grid; grid-template-columns:2fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Rua</label>
+                            <input type="text" id="enderecoRua" placeholder="Nome da rua">
+                        </div>
+                        <div class="form-group">
+                            <label>Número</label>
+                            <input type="text" id="enderecoNumero" placeholder="123">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bairro</label>
+                        <input type="text" id="enderecoBairro" placeholder="Bairro">
+                    </div>
+                    <div class="row-2" style="display:grid; grid-template-columns:2fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Cidade</label>
+                            <input type="text" id="enderecoCidade" placeholder="Cidade">
+                        </div>
+                        <div class="form-group">
+                            <label>UF</label>
+                            <input type="text" id="enderecoUf" placeholder="BA" maxlength="2">
+                        </div>
+                    </div>
+                    <div style="text-align:center;">
+                        <button class="btn-coupon" id="generateBoletoBtn"><i class="fas fa-download"></i> Gerar boleto</button>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Plano selecionado</span>
+                        <strong id="selectedPlanName">-</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ciclo de cobrança</span>
+                        <strong id="billingPeriod">Mensal</strong>
+                    </div>
+                    <div class="summary-row" id="usersRow" style="display:none;">
+                        <span>Número de usuários</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button id="decrementUsers" style="width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); cursor:pointer;">-</button>
+                            <span id="userCount">1</span>
+                            <button id="incrementUsers" style="width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <strong id="totalAmount">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <div class="security-badges">
+                    <div class="security-badge"><i class="fas fa-lock"></i> SSL Secure</div>
+                    <div class="security-badge"><i class="fas fa-shield-alt"></i> PCI Compliant</div>
+                    <div class="security-badge"><i class="fas fa-undo-alt"></i> 7 dias de garantia</div>
+                </div>
+
+                <!-- Esse botão só é usado por Pix/Boleto. O cartão tem seu próprio botão de submit dentro do Brick. -->
+                <button class="btn-pay" id="payBtn">
+                    <i class="fas fa-rocket"></i> Finalizar pagamento
+                </button>
+
+                <a href="dashboard.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Voltar ao dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+</button>
+
+<!-- Success Modal -->
+<div class="modal" id="successModal">
+    <div class="modal-content">
+        <i class="fas fa-check-circle"></i>
+        <h2>Pagamento realizado!</h2>
+        <p style="margin: 1rem 0;">Sua assinatura foi ativada com sucesso. Enviamos um link por e-mail pra você definir sua senha e acessar o dashboard.</p>
+        <button class="btn-pay" id="modalCloseBtn" style="margin-top:0; width:auto; padding:0.7rem 2rem;">Continuar</button>
+    </div>
+</div>
+
+<script>
+    // ⚠️ Troque pela sua Public Key de TESTE do Mercado Pago antes de usar.
+    const MP_PUBLIC_KEY = 'APP_USR-a7e3f741-69fd-4df2-be8c-89adf818d5f4';
+    const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+
+    let planos = [];
+    let selectedPlan = null;
+    let billingCycle = 'monthly';
+    let userCount = 1;
+    let processandoPagamento = false; // trava contra clique duplo / envio duplicado
+
+
+    // ---------- CARREGAR PLANOS DO SUPABASE ----------
+    function gerarFeatures(p) {
+        const lista = [];
+        lista.push(p.horas_mes >= 999999 ? 'Horas ilimitadas' : `${p.horas_mes} horas de transcrição/mês`);
+        lista.push(p.usuarios_max >= 999999 ? 'Usuários ilimitados' : `${p.usuarios_max} usuário${p.usuarios_max > 1 ? 's' : ''}`);
+        if (p.resumo_ia) lista.push('Resumos inteligentes com IA');
+        if (p.insights_ia) lista.push('Insights automáticos');
+        if (p.historico) lista.push('Histórico de reuniões');
+        if (p.exportar_txt) lista.push('Exportação em .txt');
+        if (p.exportar_pdf) lista.push('Exportação em PDF');
+        if (p.api) lista.push('Acesso via API');
+        return lista;
+    }
+
+    async function carregarPlanos() {
+        try {
+            const res = await fetch('/api/planos');
+            planos = await res.json();
+            renderizarCards();
+            const padrao = planos.find(p => p.destaque) || planos.find(p => p.preco_mensal > 0) || planos[0];
+            if (padrao) selecionarPlano(padrao.id);
+        } catch (err) {
+            document.getElementById('pricingGrid').innerHTML =
+                '<div style="text-align:center; padding:2rem; color:var(--danger);">Erro ao carregar planos. Recarregue a página.</div>';
+        }
+    }
+
+    function renderizarCards() {
+        const container = document.getElementById('pricingGrid');
+        container.innerHTML = planos.map(p => {
+            const isEnterprise = p.nome === 'Enterprise';
+            const isFree = p.preco_mensal === 0 && !isEnterprise;
+            const preco = billingCycle === 'yearly' ? p.preco_anual : p.preco_mensal;
+
+            return `
+            <div class="pricing-card ${p.destaque ? 'popular' : ''}" data-plan="${p.id}">
+                <div class="card-header">
+                    <h3>${p.nome}
+                        ${isFree ? '<span class="free-badge">Grátis</span>' : ''}
+                        ${p.destaque ? '<span class="pricing-badge">🔥 Mais popular</span>' : ''}
+                    </h3>
+                </div>
+                <div class="price">
+                    ${isEnterprise ? 'Sob consulta' : `R$ ${preco}<span>/${billingCycle === 'yearly' ? 'ano' : 'mês'}</span>`}
+                </div>
+                <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem;">${p.descricao}</p>
+                <ul class="plan-features">
+                    ${gerarFeatures(p).map(f => `<li><i class="fas fa-check"></i> ${f}</li>`).join('')}
+                </ul>
+            </div>`;
+        }).join('');
+
+        document.querySelectorAll('.pricing-card').forEach(card => {
+            card.addEventListener('click', () => selecionarPlano(card.dataset.plan));
+        });
+    }
+
+    function selecionarPlano(id) {
+        selectedPlan = planos.find(p => p.id === id);
+        document.querySelectorAll('.pricing-card').forEach(c => c.classList.toggle('selected', c.dataset.plan === id));
+        atualizarResumo();
+
+        const ehGratis = valorAtual() === 0;
+        document.querySelectorAll('.payment-methods, #cardPanel, #pixPanel, #boletoPanel').forEach(el => {
+            el.style.display = ehGratis ? 'none' : '';
+        });
+        document.getElementById('payBtn').style.display = ehGratis ? 'flex' : 'none';
+        document.getElementById('payBtn').innerHTML = ehGratis
+            ? '<i class="fas fa-rocket"></i> Ativar plano gratuito'
+            : '<i class="fas fa-rocket"></i> Finalizar pagamento';
+
+        if (!ehGratis) montarSecureFields();
+        showToast(`Plano ${selectedPlan.nome} selecionado`);
+    }
+
+    function isTeamLike() {
+        // usa o campo explícito do banco (por_usuario) em vez de adivinhar pelo usuarios_max
+        return selectedPlan && selectedPlan.por_usuario === true && selectedPlan.preco_mensal > 0;
+    }
+
+    function valorAtual() {
+        if (!selectedPlan) return 0;
+        const precoBase = billingCycle === 'yearly' ? selectedPlan.preco_anual : selectedPlan.preco_mensal;
+        return isTeamLike() ? precoBase * userCount : precoBase;
+    }
+
+    function atualizarResumo() {
+        if (!selectedPlan) return;
+        const preco = valorAtual();
+        document.getElementById('selectedPlanName').innerText = selectedPlan.nome;
+        document.getElementById('billingPeriod').innerText = billingCycle === 'yearly' ? 'Anual (12 meses)' : 'Mensal';
+        document.getElementById('usersRow').style.display = isTeamLike() ? 'flex' : 'none';
+        document.getElementById('subtotal').innerHTML = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+        document.getElementById('totalAmount').innerHTML = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+    }
+
+    // ---------- BILLING TOGGLE ----------
+    document.querySelectorAll('.billing-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('.billing-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            billingCycle = opt.dataset.billing;
+            renderizarCards();
+            if (selectedPlan) {
+                document.querySelector(`.pricing-card[data-plan="${selectedPlan.id}"]`)?.classList.add('selected');
+            }
+            atualizarResumo();
+            montarSecureFields();
+        });
+    });
+
+    document.getElementById('decrementUsers')?.addEventListener('click', () => {
+        if (userCount > 1) {
+            userCount--;
+            document.getElementById('userCount').innerText = userCount;
+            atualizarResumo();
+            montarSecureFields();
+        }
+    });
+
+    document.getElementById('incrementUsers')?.addEventListener('click', () => {
+        if (userCount < 50) {
+            userCount++;
+            document.getElementById('userCount').innerText = userCount;
+            atualizarResumo();
+            montarSecureFields();
+        }
+    });
+
+    // ---------- PAYMENT METHOD SWITCH ----------
+    document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', () => {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+            method.classList.add('active');
+            const methodType = method.dataset.method;
+            document.querySelectorAll('.payment-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${methodType}Panel`).classList.add('active');
+            // botão genérico "Finalizar pagamento" não é mais necessário aqui —
+            // Pix e Boleto já têm seus próprios botões dedicados dentro do painel,
+            // e tê-lo visível junto causava pagamentos duplicados (clicar nos dois).
+            document.getElementById('payBtn').style.display = 'none';
+        });
+    });
+
+    // ---------- DETECÇÃO LOCAL DE BANDEIRA (sem depender da consulta de BIN da API) ----------
+    function detectarBandeira(bin) {
+        if (!bin) return null;
+        if (/^4/.test(bin)) return 'visa';
+        if (/^(5[1-5]|2[2-7])/.test(bin)) return 'master';
+        if (/^3[47]/.test(bin)) return 'amex';
+        if (/^(4011|4312|4389|4514|5041|5067|5090|6277|6362|6363)/.test(bin)) return 'elo';
+        return 'visa'; // fallback razoável se não reconhecer
+    }
+
+    // ---------- SECURE FIELDS (tokenização segura sem o Card Brick) ----------
+    let secureCardNumberField, secureExpirationField, secureSecurityCodeField;
+    let bandeiraDetectada = null;
+    let detectandoBandeiraPromise = null;
+
+    async function montarSecureFields() {
+        if (secureCardNumberField) return; // monta só uma vez
+        secureCardNumberField = mp.fields.create('cardNumber', {
+            placeholder: '1234 5678 9012 3456'
+        }).mount('secureCardNumber');
+
+        secureExpirationField = mp.fields.create('expirationDate', {
+            placeholder: 'MM/AA'
+        }).mount('secureExpirationDate');
+
+        secureSecurityCodeField = mp.fields.create('securityCode', {
+            placeholder: 'CVV'
+        }).mount('secureSecurityCode');
+
+        secureCardNumberField.on('binChanged', (data) => {
+            const bin = data?.bin;
+            if (!bin) return;
+            bandeiraDetectada = null; // limpa enquanto detecta de novo
+            detectandoBandeiraPromise = (async () => {
+                try {
+                    const resultado = await mp.getPaymentMethods({ bin, processingMode: 'aggregator' });
+                    if (resultado?.results?.length) {
+                        bandeiraDetectada = resultado.results[0].id;
+                    } else {
+                        bandeiraDetectada = detectarBandeira(bin); // fallback local se a API não retornar nada
+                    }
+                } catch (err) {
+                    console.warn('Falha ao consultar bandeira via API, usando detecção local:', err);
+                    bandeiraDetectada = detectarBandeira(bin);
+                }
+            })();
+        });
+    }
+
+    document.getElementById('cardSubmitBtn')?.addEventListener('click', async () => {
+        const nomeCompleto = document.getElementById('userName')?.value.trim();
+        const documento = document.getElementById('userDocument')?.value.replace(/\D/g, '');
+
+        if (!nomeCompleto || nomeCompleto.split(' ').length < 2) {
+            showToast('Digite seu nome completo (nome e sobrenome)');
+            return;
+        }
+        if (!documento || documento.length < 11) {
+            showToast('Digite um CPF/CNPJ válido');
+            return;
+        }
+
+        try {
+            showToast('Validando cartão...');
+
+            const tipoDocumento = documento.length > 11 ? 'CNPJ' : 'CPF';
+            const cardToken = await mp.fields.createCardToken({
+                cardholderName: nomeCompleto,
+                identificationType: tipoDocumento,
+                identificationNumber: documento
+            });
+
+            // detecta a bandeira a partir dos dados do próprio token (funciona mesmo se
+            // o evento binChanged não disparou, comum em cartões virtuais/preenchimento automático)
+            let bandeiraFinal = bandeiraDetectada;
+            const binDoToken = cardToken.first_six_digits || cardToken.bin;
+
+            if (!bandeiraFinal && binDoToken) {
+                try {
+                    const resultado = await mp.getPaymentMethods({ bin: binDoToken, processingMode: 'aggregator' });
+                    bandeiraFinal = resultado?.results?.[0]?.id || detectarBandeira(binDoToken);
+                } catch (err) {
+                    bandeiraFinal = detectarBandeira(binDoToken);
+                }
+            }
+
+            if (!bandeiraFinal) {
+                showToast('Não foi possível identificar a bandeira do cartão. Confira o número digitado.');
+                return;
+            }
+
+            await finalizarCheckout({
+                token: cardToken.id,
+                method: 'card',
+                paymentMethodId: bandeiraFinal,
+                installments: 1
+            });
+        } catch (err) {
+            console.error('Erro ao gerar token do cartão:', err);
+            showToast('Não foi possível validar o cartão. Confira os dados.');
+        }
+    });
+
+    // ---------- FINALIZAR CHECKOUT ----------
+    async function finalizarCheckout({ token, method, paymentMethodId, issuerId, installments }) {
+        // trava contra clique duplo / reenvio: sem isso, dois cliques (ou uma rede
+        // lenta seguida de novo clique) disparam duas chamadas ao Mercado Pago,
+        // gerando duas cobranças reais pro mesmo pedido.
+        if (processandoPagamento) {
+            showToast('Aguarde, seu pagamento já está sendo processado...');
+            return Promise.reject('pagamento em andamento');
+        }
+
+        const nomeCompleto = document.getElementById('userName')?.value.trim();
+        const email = document.getElementById('userEmail')?.value.trim();
+        const documento = document.getElementById('userDocument')?.value.replace(/\D/g, '');
+
+        if (!nomeCompleto || nomeCompleto.split(' ').length < 2) {
+            showToast('Digite seu nome completo (nome e sobrenome)');
+            return Promise.reject('nome inválido');
+        }
+        if (!email || !email.includes('@')) {
+            showToast('Digite um e-mail válido');
+            return Promise.reject('email inválido');
+        }
+        if (!selectedPlan) {
+            showToast('Selecione um plano');
+            return Promise.reject('sem plano');
+        }
+        // CPF/CNPJ só é obrigatório pra métodos pagos (pix/boleto/cartão), não pro plano Free
+        if (valorAtual() > 0 && (!documento || documento.length < 11)) {
+            showToast('Digite um CPF/CNPJ válido');
+            return Promise.reject('documento inválido');
+        }
+
+        const partesNome = nomeCompleto.split(' ');
+        const primeiroNome = partesNome[0];
+        const sobrenome = partesNome.slice(1).join(' ');
+
+        // endereço só é obrigatório pra boleto
+        let endereco = null;
+        if (method === 'bolbradesco') {
+            const cep = document.getElementById('enderecoCep')?.value.replace(/\D/g, '');
+            const rua = document.getElementById('enderecoRua')?.value.trim();
+            const numero = document.getElementById('enderecoNumero')?.value.trim();
+            const bairro = document.getElementById('enderecoBairro')?.value.trim();
+            const cidade = document.getElementById('enderecoCidade')?.value.trim();
+            const uf = document.getElementById('enderecoUf')?.value.trim().toUpperCase();
+
+            if (!cep || !rua || !numero || !bairro || !cidade || !uf) {
+                showToast('Preencha o endereço completo pra gerar o boleto');
+                return Promise.reject('endereço incompleto');
+            }
+            endereco = { cep, rua, numero, bairro, cidade, uf };
+        }
+
+        const payload = {
+            token,
+            method,
+            paymentMethodId,
+            issuerId,
+            installments,
+            email,
+            documento: documento || null,
+            firstName: primeiroNome,
+            lastName: sobrenome,
+            endereco,
+            planoId: selectedPlan.id,
+            ciclo: billingCycle,
+            quantidadeUsuarios: userCount,
+            valor: valorAtual()
+        };
+
+        // trava todos os botões relevantes enquanto a requisição está em voo
+        processandoPagamento = true;
+        const botoesPagamento = ['cardSubmitBtn', 'payBtn', 'generatePixBtn', 'generateBoletoBtn']
+            .map(id => document.getElementById(id))
+            .filter(Boolean);
+        botoesPagamento.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; b.style.cursor = 'not-allowed'; });
+
+        showToast('Processando pagamento...');
+
+        try {
+            // se a pessoa estiver logada, envia o token: alterar o plano de
+            // uma conta existente exige estar logado nela
+            const tokenCheckout = localStorage.getItem('token');
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(tokenCheckout ? { Authorization: 'Bearer ' + tokenCheckout } : {})
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.error || 'Erro ao processar pagamento');
+                if (res.status === 409 && data.redirect) {
+                    setTimeout(() => { window.location.href = data.redirect; }, 2500);
+                }
+                return Promise.reject(data.error);
+            }
+
+            if (data.status === 'ja_ativo') {
+                showToast(data.mensagem || 'Você já está nesse plano.');
+                return Promise.resolve();
+            }
+
+            if (data.status === 'aprovado') {
+                document.getElementById('successModal').classList.add('active');
+                return Promise.resolve();
+            }
+
+            if (data.status === 'pendente') {
+                if (data.qrCodeBase64) {
+                    document.getElementById('pixQrContainer').innerHTML =
+                        `<img src="data:image/png;base64,${data.qrCodeBase64}" alt="QR Code Pix">`;
+                    document.getElementById('pixCodeText').innerText = data.qrCode || '';
+                    document.getElementById('copyPixBtn').style.display = 'inline-flex';
+                    if (data.paymentId) monitorarPagamentoPix(data.paymentId);
+                } else if (data.ticketUrl) {
+                    showToast('Boleto gerado! Abrindo em nova aba...');
+                    window.open(data.ticketUrl, '_blank');
+                } else {
+                    // caso do cartão: pagamento ficou em análise (antifraude), sem QR nem boleto
+                    showToast('Pagamento em análise. Você receberá um e-mail assim que for aprovado.');
+                }
+                return Promise.resolve();
+            }
+
+        } catch (err) {
+            console.error(err);
+            showToast('Erro de conexão ao processar pagamento');
+            return Promise.reject(err);
+        } finally {
+            // libera os botões de novo, inclusive pra permitir tentar de novo se algo
+            // deu errado — mas enquanto a chamada anterior está em voo, fica travado
+            processandoPagamento = false;
+            botoesPagamento.forEach(b => { b.disabled = false; b.style.opacity = ''; b.style.cursor = ''; });
+        }
+    }
+
+    // ---------- BOTÃO GERAR PIX ----------
+    document.getElementById('generatePixBtn')?.addEventListener('click', () => {
+        finalizarCheckout({ method: 'pix' });
+    });
+
+    // ---------- BOTÃO GERAR BOLETO ----------
+    document.getElementById('generateBoletoBtn')?.addEventListener('click', () => {
+        finalizarCheckout({ method: 'bolbradesco' });
+    });
+
+    // ---------- BOTÃO GENÉRICO (agora só usado pro plano gratuito) ----------
+    document.getElementById('payBtn').addEventListener('click', () => {
+        if (valorAtual() === 0) {
+            finalizarCheckout({ method: 'free' });
+        }
+    });
+
+    // ---------- MONITORAMENTO AUTOMÁTICO DO PIX ----------
+    // Depois do QR gerado, a página checa sozinha (a cada 4s, por até 5 minutos)
+    // se o webhook já confirmou o pagamento — sem precisar recarregar a página.
+    let intervaloMonitoramento = null;
+
+    function monitorarPagamentoPix(paymentId) {
+        if (intervaloMonitoramento) clearInterval(intervaloMonitoramento);
+
+        showToast('Aguardando confirmação do Pix...');
+        let tentativas = 0;
+        const MAX_TENTATIVAS = 75; // 75 * 4s = 5 minutos
+
+        intervaloMonitoramento = setInterval(async () => {
+            tentativas++;
+            try {
+                const res = await fetch(`/api/status-pagamento?paymentId=${encodeURIComponent(paymentId)}&_=${Date.now()}`, { cache: 'no-store' });
+                const data = await res.json();
+
+                if (data.status === 'concluido') {
+                    clearInterval(intervaloMonitoramento);
+                    document.getElementById('successModal').classList.add('active');
+                    // redireciona sozinho depois de alguns segundos, sem precisar clicar em "Continuar"
+                    setTimeout(() => { window.location.href = '/login.html'; }, 4000);
+                    return;
+                }
+            } catch (err) {
+                console.warn('Falha ao checar status do Pix (tentando de novo):', err.message);
+            }
+
+            if (tentativas >= MAX_TENTATIVAS) {
+                clearInterval(intervaloMonitoramento);
+                showToast('Ainda aguardando confirmação. Você pode fechar esta página — vamos avisar por e-mail quando confirmar.');
+            }
+        }, 4000);
+    }
+
+    // ---------- COPIAR CÓDIGO PIX ----------
+    document.getElementById('copyPixBtn')?.addEventListener('click', () => {
+        const pixCode = document.getElementById('pixCodeText')?.innerText;
+        if (pixCode) {
+            navigator.clipboard.writeText(pixCode);
+            showToast('Código Pix copiado!');
+        }
+    });
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success); margin-right:10px;"></i>${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    document.getElementById('modalCloseBtn').addEventListener('click', () => {
+        document.getElementById('successModal').classList.remove('active');
+        window.location.href = '/login.html';
+    });
+
+    document.getElementById('successModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('successModal')) {
+            document.getElementById('successModal').classList.remove('active');
+        }
+    });
+
+    // Theme toggle
+    let darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) document.body.classList.add('dark');
+    document.getElementById('themeToggle').onclick = () => {
+        darkMode = !darkMode;
+        document.body.classList.toggle('dark', darkMode);
+        localStorage.setItem('darkMode', darkMode);
+    };
+
+    // Formatação automática do CPF/CNPJ
+    document.getElementById('userDocument')?.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        } else {
+            value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        }
+        e.target.value = value.slice(0, 18);
+    });
+
+    // botão genérico começa escondido (padrão é cartão ativo)
+    document.getElementById('payBtn').style.display = 'none';
+
+    carregarPlanos();
+</script>
+</body>
+</html>

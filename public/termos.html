@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>TranscreveAI • Privacidade, Termos e Contato</title>
+    <!-- Google Fonts + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="icon" href="assets/robo.ico" type="image/x-icon">
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 0% 0%, #f8f5ff, #ffffff);
+            z-index: -2;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ---------- NAVBAR (mais clean) ---------- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 2rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #5B3B8C, #EAB308);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #EAB308, #5B3B8C);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        /* ---------- BOTÃO VOLTAR MAIS CLEAN ---------- */
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #8a8aa0;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .back-home:hover {
+            color: #5B3B8C;
+            background: #f5f3ff;
+            transform: translateX(-2px);
+        }
+        .back-home i {
+            font-size: 0.8rem;
+        }
+
+        /* ---------- BADGE / TÍTULO ---------- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FEF9C3;
+            border-radius: 100px;
+            padding: 0.4rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #854D0E;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: clamp(2.2rem, 4vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+        .page-title .highlight {
+            background: linear-gradient(120deg, #5B3B8C, #EAB308);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            color: #5a5a7a;
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #EAB308;
+            padding-left: 1rem;
+        }
+
+        hr.yellow-hr {
+            width: 70px;
+            height: 3px;
+            background: #EAB308;
+            border: none;
+            margin: 0.5rem 0 1.5rem 0;
+            border-radius: 10px;
+        }
+
+        /* ---------- SEPARADOR ENTRE SEÇÕES ---------- */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 3.5rem 0 4rem 0;
+            color: #b0b0c0;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e0e0e6, transparent);
+        }
+        .section-divider i {
+            color: #EAB308;
+            font-size: 1rem;
+        }
+
+        /* ---------- LAYOUT: SIDEBAR + CONTEÚDO ---------- */
+        .legal-wrapper {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 3rem;
+            margin-top: 1.5rem;
+        }
+
+        /* SIDEBAR - ÚNICO LOCAL DE NAVEGAÇÃO */
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            background: #fafaff;
+            border-radius: 24px;
+            padding: 1.8rem 1.5rem;
+            border: 1px solid #eeeef5;
+            box-shadow: 0 8px 20px -10px rgba(0,0,0,0.04);
+        }
+        .sidebar h4 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8a8aa0;
+            margin-bottom: 1.2rem;
+            font-weight: 600;
+        }
+        .sidebar a {
+            display: block;
+            padding: 0.6rem 0.8rem;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar a:hover {
+            background: #FFFBEB;
+            color: #D97706;
+        }
+        .sidebar a i {
+            width: 22px;
+            color: #EAB308;
+            margin-right: 6px;
+        }
+
+        /* CONTEÚDO PRINCIPAL */
+        .legal-content {
+            max-width: 900px;
+        }
+
+        .legal-section {
+            margin-bottom: 2rem;
+        }
+        .legal-section h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .legal-section h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .legal-section p {
+            color: #4a4a6a;
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .legal-section ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .legal-section ul li {
+            margin-bottom: 0.5rem;
+            color: #4a4a6a;
+            list-style-type: '✦ ';
+            padding-left: 0.5rem;
+        }
+        .legal-section ul li::marker {
+            color: #EAB308;
+        }
+
+        /* CARDS DE CONTATO */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .contact-card {
+            background: #fafaff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #eeeef5;
+            transition: all 0.25s;
+        }
+        .contact-card:hover {
+            border-color: #EAB308;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -12px rgba(234,179,8,0.15);
+        }
+        .contact-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.3rem;
+        }
+        .contact-card p {
+            color: #5a5a7a;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .contact-card i {
+            color: #EAB308;
+            margin-right: 6px;
+            width: 20px;
+        }
+
+        /* ---------- FOOTER (mesmo estilo) ---------- */
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f0f0f5;
+            color: #8a8aa0;
+            font-size: 0.9rem;
+        }
+        .footer a {
+            color: #5B3B8C;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer a:hover {
+            color: #EAB308;
+        }
+
+        /* ---------- RESPONSIVO ---------- */
+        @media (max-width: 820px) {
+            .legal-wrapper {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .sidebar {
+                position: relative;
+                top: 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                padding: 1rem 1.2rem;
+                border-radius: 18px;
+            }
+            .sidebar h4 {
+                width: 100%;
+                margin-bottom: 0.3rem;
+            }
+            .sidebar a {
+                display: inline-block;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .navbar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .section-divider {
+                margin: 2.5rem 0 3rem 0;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            .subtitle {
+                font-size: 0.95rem;
+            }
+            .navbar {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .back-home span {
+                display: none;
+            }
+            .back-home i {
+                font-size: 1rem;
+            }
+            .back-home {
+                padding: 0.4rem 0.6rem;
+            }
+        }
+
+        /* ---------- ANIMAÇÃO FADE-UP ---------- */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.6s ease;
+        }
+        .fade-up.appear {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .inline-yellow {
+            background: #FEF9C3;
+            color: #854D0E;
+            font-weight: 600;
+            padding: 0.1rem 0.4rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<div class="container">
+
+    <!-- ===== NAVBAR ===== -->
+    <div class="navbar fade-up">
+        <div class="logo">Transcreve<span>AI</span></div>
+        <a href="/landing.html" class="back-home">
+            <i class="fas fa-arrow-left"></i>
+            <span>Voltar</span>
+        </a>
+    </div>
+
+    <!-- ===== TÍTULO PRINCIPAL ===== -->
+    <div class="fade-up">
+        <div class="badge">
+            <i class="fas fa-shield-alt"></i> Transparência e confiança
+        </div>
+        <h1 class="page-title">
+            Política de <span class="highlight">Privacidade</span> &amp; Termos
+        </h1>
+        <p class="subtitle">
+            Última atualização • 12 de Julho de 2026
+        </p>
+        <hr class="yellow-hr" />
+    </div>
+
+    <!-- ===== WRAPPER (SIDEBAR + CONTEÚDO) ===== -->
+    <div class="legal-wrapper">
+
+        <!-- SIDEBAR - Única navegação -->
+        <aside class="sidebar fade-up">
+            <h4><i class="fas fa-compass" style="color:#EAB308; margin-right:6px;"></i> Navegação</h4>
+            <a href="#privacidade"><i class="fas fa-lock"></i> Privacidade</a>
+            <a href="#termos"><i class="fas fa-file-contract"></i> Termos de Uso</a>
+            <a href="#compra"><i class="fas fa-shopping-cart"></i> Termos de Compra</a>
+            <a href="#contato"><i class="fas fa-envelope"></i> Contato</a>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="legal-content">
+
+            <!-- ===== PRIVACIDADE ===== -->
+            <section id="privacidade" class="legal-section fade-up">
+                <h2>Política de Privacidade</h2>
+                <p>
+                    No <strong>TranscreveAI</strong>, levamos sua privacidade a sério. Esta Política descreve como
+                    coletamos, utilizamos, armazenamos e protegemos suas informações pessoais durante o uso da plataforma.
+                </p>
+
+                <h2>Dados coletados</h2>
+                <ul>
+                    <li>Nome e endereço de e-mail.</li>
+                    <li>Foto de perfil (opcional).</li>
+                    <li>Plano contratado.</li>
+                    <li>Transcrições de reuniões.</li>
+                    <li>Resumos e insights gerados por Inteligência Artificial.</li>
+                    <li>Histórico de utilização.</li>
+                    <li>Informações técnicas como navegador, IP, dispositivo e logs.</li>
+                </ul>
+
+                <h2>Como utilizamos seus dados</h2>
+                <p>
+                    As informações coletadas são utilizadas para autenticar sua conta, realizar transcrições,
+                    gerar resumos por IA, oferecer suporte, melhorar nossos serviços e garantir a segurança da plataforma.
+                </p>
+
+                <h2>Compartilhamento</h2>
+                <p>
+                    Os dados poderão ser compartilhados apenas com provedores necessários para funcionamento da
+                    plataforma, como hospedagem, autenticação, processamento de pagamentos e Inteligência Artificial.
+                    Nunca comercializamos seus dados pessoais.
+                </p>
+
+                <h2>Segurança</h2>
+                <p>
+                    Adotamos criptografia, autenticação, controle de acesso e monitoramento contínuo para proteger
+                    suas informações contra acessos não autorizados.
+                </p>
+            </section>
+
+            <!-- ===== SEPARADOR ===== -->
+            <div class="section-divider">
+                <i class="fas fa-gem"></i>
+                <span>• • •</span>
+                <i class="fas fa-gem"></i>
+            </div>
+
+            <!-- ===== TERMOS DE USO ===== -->
+            <section id="termos" class="legal-section fade-up">
+                <h2>Termos de Uso</h2>
+                <p>
+                    Ao utilizar o <strong>TranscreveAI</strong> você concorda com os termos abaixo.
+                </p>
+
+                <h2>Utilização da Plataforma</h2>
+                <p>
+                    O TranscreveAI oferece ferramentas de gravação, transcrição, organização e análise de reuniões
+                    utilizando Inteligência Artificial.
+                </p>
+
+                <h2>Responsabilidades do Usuário</h2>
+                <ul>
+                    <li>Fornecer informações verdadeiras.</li>
+                    <li>Manter sua senha em segurança.</li>
+                    <li>Não compartilhar sua conta.</li>
+                    <li>Não utilizar o serviço para fins ilícitos.</li>
+                    <li>Obter autorização para gravação das reuniões quando exigido por lei.</li>
+                </ul>
+
+                <h2>Conteúdo</h2>
+                <p>
+                    Todo conteúdo enviado permanece de propriedade do usuário. O TranscreveAI utiliza essas informações
+                    apenas para executar as funcionalidades contratadas.
+                </p>
+
+                <h2>Inteligência Artificial</h2>
+                <p>
+                    Os conteúdos gerados pela IA podem conter imprecisões e devem ser revisados antes de qualquer
+                    decisão importante.
+                </p>
+
+                <h2>Disponibilidade</h2>
+                <p>
+                    Buscamos manter nossos serviços sempre disponíveis, porém interrupções ocasionais podem ocorrer
+                    devido a manutenções ou fatores externos.
+                </p>
+            </section>
+
+            <!-- ===== SEPARADOR ===== -->
+            <div class="section-divider">
+                <i class="fas fa-gem"></i>
+                <span>• • •</span>
+                <i class="fas fa-gem"></i>
+            </div>
+
+            <!-- ===== TERMOS DE COMPRA E ASSINATURA ===== -->
+            <section id="compra" class="legal-section fade-up">
+                <h2>Termos de Compra e Assinatura</h2>
+                <p><strong>Última atualização:</strong> 12 de julho de 2026</p>
+
+                <h2>1. Objetivo</h2>
+                <p>
+                    Estes Termos de Compra e Assinatura regulam a contratação dos planos pagos disponibilizados pelo TranscreveAI.
+                    Ao adquirir qualquer plano, o Cliente declara que leu e concorda com estes Termos, com os Termos de Uso e com a Política de Privacidade.
+                </p>
+
+                <h2>2. Planos</h2>
+                <p>
+                    O TranscreveAI oferece planos gratuitos e planos pagos, cujas características, limites, preços e funcionalidades são informados na página de preços da plataforma.
+                    Os limites podem incluir, entre outros:
+                </p>
+                <ul>
+                    <li>quantidade de horas de transcrição;</li>
+                    <li>número de reuniões;</li>
+                    <li>armazenamento disponível;</li>
+                    <li>quantidade de usuários;</li>
+                    <li>funcionalidades exclusivas.</li>
+                </ul>
+
+                <h2>3. Pagamento</h2>
+                <p>
+                    Os pagamentos poderão ser realizados pelos meios disponibilizados na plataforma.
+                    Dependendo do plano escolhido, a cobrança poderá ocorrer de forma:
+                </p>
+                <ul>
+                    <li>mensal;</li>
+                    <li>anual;</li>
+                    <li>única (quando aplicável).</li>
+                </ul>
+                <p>Todas as cobranças serão realizadas na moeda informada durante a contratação.</p>
+
+                <h2>4. Renovação Automática</h2>
+                <p>
+                    Os planos de assinatura são renovados automaticamente ao final de cada período contratado, utilizando o método de pagamento cadastrado.
+                    O usuário poderá cancelar a renovação automática a qualquer momento antes da próxima data de cobrança.
+                </p>
+
+                <h2>5. Cancelamento</h2>
+                <p>
+                    O cancelamento pode ser solicitado diretamente pela área da conta.
+                    Após o cancelamento:
+                </p>
+                <ul>
+                    <li>não serão realizadas novas cobranças;</li>
+                    <li>o plano permanecerá ativo até o término do período já pago;</li>
+                    <li>ao final da vigência, a conta poderá retornar ao plano gratuito, quando disponível.</li>
+                </ul>
+
+                <h2>6. Reembolso</h2>
+                <p>
+                    Salvo disposição legal em contrário, os pagamentos realizados não são reembolsáveis.
+                    Caso haja cobrança indevida ou erro comprovado de processamento, o TranscreveAI analisará a situação e poderá realizar o estorno ou crédito correspondente.
+                    Pedidos de reembolso deverão ser enviados pelos canais oficiais de atendimento.
+                </p>
+
+                <h2>7. Alteração de Preços</h2>
+                <p>
+                    Os preços dos planos poderão ser alterados periodicamente.
+                    Alterações não afetam o período já contratado.
+                    Quando aplicável, o usuário será informado com antecedência antes da renovação por novo valor.
+                </p>
+
+                <h2>8. Impostos</h2>
+                <p>
+                    Os valores apresentados poderão incluir ou não tributos, conforme exigido pela legislação aplicável e conforme indicado durante o processo de compra.
+                </p>
+
+                <h2>9. Falha no Pagamento</h2>
+                <p>
+                    Caso o pagamento não seja aprovado, o TranscreveAI poderá:
+                </p>
+                <ul>
+                    <li>tentar realizar nova cobrança;</li>
+                    <li>suspender temporariamente recursos pagos;</li>
+                    <li>reduzir a conta para o plano gratuito;</li>
+                    <li>cancelar a assinatura após tentativas de cobrança sem sucesso.</li>
+                </ul>
+
+                <h2>10. Upgrade e Downgrade</h2>
+                <p>O usuário poderá alterar seu plano conforme as opções disponíveis.</p>
+                <p><strong>Upgrade:</strong> Ao migrar para um plano superior, os novos recursos poderão ser disponibilizados imediatamente, podendo haver cobrança proporcional ao período restante do ciclo vigente.</p>
+                <p><strong>Downgrade:</strong> Ao migrar para um plano inferior, as alterações normalmente passam a valer na próxima renovação, preservando os benefícios do plano atual até o fim do ciclo contratado.</p>
+
+                <h2>11. Disponibilidade dos Serviços</h2>
+                <p>
+                    Embora o TranscreveAI adote boas práticas para manter seus serviços disponíveis, podem ocorrer interrupções decorrentes de:
+                </p>
+                <ul>
+                    <li>manutenção programada;</li>
+                    <li>atualizações;</li>
+                    <li>falhas em provedores terceirizados;</li>
+                    <li>eventos fora do controle da empresa.</li>
+                </ul>
+                <p>Essas situações não geram direito automático a reembolso, salvo quando previsto em lei.</p>
+
+                <h2>12. Direito de Suspensão</h2>
+                <p>
+                    O TranscreveAI poderá suspender ou cancelar assinaturas em casos de:
+                </p>
+                <ul>
+                    <li>fraude;</li>
+                    <li>uso abusivo;</li>
+                    <li>tentativa de invasão;</li>
+                    <li>utilização contrária aos Termos de Uso;</li>
+                    <li>inadimplência prolongada.</li>
+                </ul>
+
+                <h2>13. Atendimento</h2>
+                <p>
+                    Dúvidas relacionadas à compra, cobrança ou assinatura poderão ser encaminhadas para nossos canais oficiais.
+                </p>
+                <p>
+                    <strong>E-mail Comercial:</strong> <a href="mailto:comercial@transcreveai.com">comercial@transcreveai.com</a><br />
+                    <strong>E-mail Financeiro:</strong> <a href="mailto:financeiro@transcreveai.com">financeiro@transcreveai.com</a><br />
+                    <strong>E-mail de Suporte:</strong> <a href="mailto:suporte@transcreveai.com">suporte@transcreveai.com</a>
+                </p>
+
+                <h2>14. Alterações destes Termos</h2>
+                <p>
+                    O TranscreveAI poderá atualizar estes Termos sempre que necessário para refletir mudanças na legislação, nos serviços ou nas políticas comerciais.
+                    A versão mais recente estará sempre disponível em nosso site.
+                </p>
+
+                <h2>15. Legislação Aplicável</h2>
+                <p>
+                    Estes Termos são regidos pelas leis da República Federativa do Brasil, incluindo, quando aplicável:
+                </p>
+                <ul>
+                    <li>Código Civil;</li>
+                    <li>Código de Defesa do Consumidor;</li>
+                    <li>Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</li>
+                </ul>
+
+                <p style="margin-top: 1.5rem; background: #FFFBEB; padding: 1rem 1.5rem; border-radius: 16px; border-left: 4px solid #EAB308;">
+                    <i class="fas fa-check-circle" style="color: #EAB308; margin-right: 8px;"></i>
+                    Ao concluir a contratação de qualquer plano do TranscreveAI, o Cliente declara que leu, compreendeu e concorda integralmente com estes Termos de Compra e Assinatura.
+                </p>
+            </section>
+
+            <!-- ===== SEPARADOR ===== -->
+            <div class="section-divider">
+                <i class="fas fa-gem"></i>
+                <span>• • •</span>
+                <i class="fas fa-gem"></i>
+            </div>
+
+            <!-- ===== CONTATO ===== -->
+            <section id="contato" class="legal-section fade-up">
+                <h2>Contato</h2>
+                <p class="subtitle" style="border-left-color:#5B3B8C; margin-bottom:1.5rem;">
+                    Estamos sempre disponíveis para ajudar.
+                </p>
+
+                <div class="contact-grid">
+                    <div class="contact-card">
+                        <h3><i class="fas fa-headset"></i> Suporte</h3>
+                        <p>suporte@transcreveai.com</p>
+                    </div>
+                    <div class="contact-card">
+                        <h3><i class="fas fa-user-shield"></i> Privacidade</h3>
+                        <p>privacidade@transcreveai.com</p>
+                    </div>
+                    <div class="contact-card">
+                        <h3><i class="fas fa-handshake"></i> Comercial</h3>
+                        <p>comercial@transcreveai.com</p>
+                    </div>
+                    <div class="contact-card">
+                        <h3><i class="fas fa-clock"></i> Horário de Atendimento</h3>
+                        <p>
+                            Segunda a Sexta-feira<br />
+                            08:00 às 18:00 (Horário de Brasília)
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="footer fade-up">
+        <p>© 2026 TranscreveAI · <a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · <a href="#compra">Compra</a> · <a href="#contato">Contato</a></p>
+        <p style="margin-top: 0.5rem;">
+            <i class="fas fa-brain"></i> Transcrição com IA — transforme voz em insights e impulsione sua produtividade
+        </p>
+    </div>
+
+</div>
+
+<script>
+    // Scroll reveal
+    const fadeElements = document.querySelectorAll('.fade-up');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('appear');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -30px 0px" });
+    fadeElements.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

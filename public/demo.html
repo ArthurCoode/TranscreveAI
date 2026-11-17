@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TranscreveAI | Dashboard Executive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f8f9fc;
+            --bg-secondary: #ffffff;
+            --sidebar-bg: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e9eef3;
+            --card-bg: #ffffff;
+            --hover-bg: #f3f0ff;
+            --primary: #5B3B8C;
+            --primary-light: #8B5CF6;
+            --primary-dark: #4c2d7a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body.dark {
+            --bg-primary: #0a0c10;
+            --bg-secondary: #11131a;
+            --sidebar-bg: #0f1117;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #1e222d;
+            --card-bg: #11131a;
+            --hover-bg: rgba(91, 59, 140, 0.2);
+        }
+
+        html, body {
+            max-width: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .logo span,
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .user-details {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .user-section {
+            justify-content: center;
+        }
+
+        .logo {
+            padding: 1.8rem 1.5rem;
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            white-space: nowrap;
+        }
+
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 20px;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 0.7rem;
+            z-index: 101;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed .collapse-btn {
+            transform: rotate(180deg);
+        }
+
+        /* Overlay usado apenas no mobile, para fechar o menu ao tocar fora dele */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 99;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* Botão hamburguer - só aparece no mobile */
+        .menu-toggle {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.85rem 1rem;
+            border-radius: 14px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link i {
+            width: 22px;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--hover-bg);
+            color: var(--primary-light);
+        }
+
+        .user-section {
+            position: absolute;
+            bottom: 2rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .user-details strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            margin-left: 280px;
+            padding: 1.5rem 2rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+        }
+
+        .page-title {
+            min-width: 0;
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle, .notification-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle:hover, .notification-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .btn-new {
+            background: var(--primary);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-new:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            min-width: 0;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px -8px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--hover-bg);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* Charts */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            min-width: 0;
+        }
+
+        .chart-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .chart-card canvas {
+            max-width: 100%;
+        }
+
+        canvas {
+            max-height: 250px;
+            width: 100% !important;
+        }
+
+        /* Content Panels */
+        .content-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Meetings Section */
+        .meetings-section, .settings-section, .transcripts-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .meeting-item, .transcript-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 18px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .meeting-item > div:first-child,
+        .transcript-item > div:first-child {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .meeting-item strong,
+        .transcript-item strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .meeting-item:hover, .transcript-item:hover {
+            background: var(--hover-bg);
+            transform: translateX(4px);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .badge.completed { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge.processing { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        /* Settings Styles */
+        .settings-group {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-group h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            min-width: 0;
+        }
+
+        .setting-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .setting-input {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            max-width: 220px;
+            width: 100%;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 100px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 3px;
+            transition: left 0.2s;
+        }
+
+        .toggle-switch.active::after {
+            left: 21px;
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 380px;
+            max-width: calc(100vw - 24px);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            z-index: 200;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notification-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notification-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .notification-tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 12px;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .notification-item.unread {
+            background: rgba(91, 59, 140, 0.05);
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .notification-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .clear-all {
+            padding: 0.75rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            cursor: pointer;
+            color: var(--danger);
+            font-size: 0.8rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            left: 20px;
+            max-width: 380px;
+            margin-left: auto;
+            background: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            z-index: 1100;
+            animation: slideIn 0.3s ease;
+            color: var(--text-primary);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ===== TABLET: sidebar vira apenas ícones ===== */
+        @media (max-width: 1024px) {
+            .sidebar:not(.mobile-open) { width: 80px; }
+            .sidebar:not(.mobile-open) .logo span,
+            .sidebar:not(.mobile-open) .nav-link span,
+            .sidebar:not(.mobile-open) .user-details { display: none; }
+            .sidebar:not(.mobile-open) .nav-link { justify-content: center; }
+            .main-content { margin-left: 80px; }
+        }
+
+        /* ===== MOBILE: sidebar vira menu off-canvas ===== */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                width: 260px;
+                transform: translateX(-100%);
+                box-shadow: 0 0 30px rgba(0,0,0,0.15);
+            }
+
+            /* No mobile, mesmo "collapsed" a sidebar some totalmente
+               até o usuário abrir pelo hamburguer */
+            .sidebar.collapsed {
+                width: 260px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar.mobile-open .logo span,
+            .sidebar.mobile-open .nav-link span,
+            .sidebar.mobile-open .user-details {
+                display: inline;
+            }
+
+            .sidebar.mobile-open .nav-link {
+                justify-content: flex-start;
+            }
+
+            .collapse-btn {
+                display: none;
+            }
+
+            .main-content,
+            .main-content.expanded {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                gap: 0.75rem;
+            }
+
+            .page-title h1 {
+                font-size: 1.3rem;
+            }
+
+            .page-title p {
+                font-size: 0.75rem;
+            }
+
+            .header-actions {
+                gap: 0.5rem;
+            }
+
+            .btn-new span {
+                display: none;
+            }
+
+            .btn-new {
+                padding: 0.7rem;
+                width: 42px;
+                justify-content: center;
+            }
+
+            #exportAllBtn span,
+            #inviteBtn span,
+            #saveSettingsBtn span {
+                display: inline;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                padding: 1rem;
+            }
+
+            .meetings-section, .settings-section, .transcripts-section {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .meeting-item, .transcript-item {
+                flex-wrap: wrap;
+            }
+
+            .setting-row {
+                flex-wrap: wrap;
+            }
+
+            .setting-input {
+                max-width: 100%;
+            }
+
+            .notification-dropdown {
+                right: 12px;
+                left: 12px;
+                width: auto;
+                max-width: none;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                border-radius: 22px;
+            }
+
+            .toast {
+                right: 12px;
+                left: 12px;
+                bottom: 12px;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header-left .logo-mini {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- Overlay do menu mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="collapse-btn" id="collapseBtn"><i class="fas fa-chevron-left"></i></div>
+        <div class="logo">T<span>ranscribeAI</span></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a class="nav-link active" data-tab="dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="meetings"><i class="fas fa-microphone"></i><span>Meetings</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="transcripts"><i class="fas fa-file-alt"></i><span>Transcripts</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="insights"><i class="fas fa-brain"></i><span>Insights</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="team"><i class="fas fa-users"></i><span>Team</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-tab="settings"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+        </ul>
+        <div class="user-section"><div class="user-avatar">JD</div><div class="user-details"><strong>João Silva</strong><br><small style="color:var(--text-secondary);">Enterprise Plan</small></div></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu"><i class="fas fa-bars"></i></button>
+                <div class="page-title"><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">Welcome back! Here's your meeting intelligence</p></div>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <div class="notification-btn" id="notificationBtn"><i class="fas fa-bell"></i><span class="notification-badge" id="notificationCount">3</span></div>
+                <button class="btn-new" id="newMeetingBtn"><i class="fas fa-plus"></i> <span>New Meeting</span></button>
+            </div>
+        </div>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header"><span><i class="fas fa-bell"></i> Notifications</span><span class="clear-all" id="clearAllNotif">Clear all</span></div>
+            <div class="notification-tabs"><div class="notification-tab active" data-notif-tab="all">All</div><div class="notification-tab" data-notif-tab="unread">Unread</div></div>
+            <div class="notification-list" id="notificationList"></div>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="content-panel active" id="dashboardPanel">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-calendar"></i></div></div><div class="stat-value" id="totalMeetings">0</div><div class="stat-label">Total Meetings</div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-clock"></i></div></div><div class="stat-value" id="totalHours">0</div><div class="stat-label">Hours Transcribed</div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-chart-line"></i></div></div><div class="stat-value" id="totalInsights">0</div><div class="stat-label">AI Insights</div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-icon"><i class="fas fa-robot"></i></div></div><div class="stat-value">98<span style="font-size:1rem;">%</span></div><div class="stat-label">AI Accuracy</div></div>
+            </div>
+            <div class="charts-row">
+                <div class="chart-card"><h3>📈 Meetings Trend</h3><canvas id="meetingsChart"></canvas></div>
+                <div class="chart-card"><h3>⏱️ Transcription Hours</h3><canvas id="hoursChart"></canvas></div>
+            </div>
+            <div class="meetings-section"><div class="section-header"><h3>📋 Recent Meetings</h3></div><div id="meetingList"></div></div>
+        </div>
+
+        <!-- Meetings Panel -->
+        <div class="content-panel" id="meetingsPanel">
+            <div class="meetings-section"><div class="section-header"><h3>📋 All Meetings</h3><button class="btn-new" id="exportAllBtn" style="background:var(--border); color:var(--text-primary);"><i class="fas fa-download"></i> <span>Export CSV</span></button></div><div id="allMeetingsList"></div></div>
+        </div>
+
+        <!-- Transcripts Panel -->
+        <div class="content-panel" id="transcriptsPanel">
+            <div class="transcripts-section"><div class="section-header"><h3>📄 Recent Transcripts</h3><input type="text" id="searchTranscript" placeholder="Search transcripts..." style="padding:0.5rem 1rem; border-radius:12px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); width:100%; max-width:260px;"></div><div id="transcriptsList"></div></div>
+        </div>
+
+        <!-- Insights Panel -->
+        <div class="content-panel" id="insightsPanel">
+            <div class="meetings-section"><h3>🧠 AI-Generated Insights</h3><div id="insightsList"></div></div>
+        </div>
+
+        <!-- Team Panel -->
+        <div class="content-panel" id="teamPanel">
+            <div class="meetings-section"><h3>👥 Team Members</h3><div id="teamList"></div><button class="btn-new" id="inviteBtn" style="margin-top:1rem;"><i class="fas fa-envelope"></i> <span>Invite Member</span></button></div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="content-panel" id="settingsPanel">
+            <div class="settings-section">
+                <div class="settings-group"><h3><i class="fas fa-user-circle"></i> Profile</h3>
+                    <div class="setting-row"><div class="setting-info"><h4>Full Name</h4><p>Your displayed name</p></div><input class="setting-input" value="João Silva" id="profileName"></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Email Address</h4><p>Used for login and notifications</p></div><input class="setting-input" value="joao@transcribeai.com" id="profileEmail"></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Company</h4><p>Your organization name</p></div><input class="setting-input" value="TranscribeAI Inc." id="profileCompany"></div>
+                </div>
+                <div class="settings-group"><h3><i class="fas fa-bell"></i> Notifications</h3>
+                    <div class="setting-row"><div class="setting-info"><h4>Email Notifications</h4><p>Receive meeting summaries via email</p></div><div class="toggle-switch" id="emailNotifToggle"></div></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Push Notifications</h4><p>Get real-time alerts in browser</p></div><div class="toggle-switch active" id="pushNotifToggle"></div></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Weekly Digest</h4><p>Weekly summary of all meetings</p></div><div class="toggle-switch active" id="digestToggle"></div></div>
+                </div>
+                <div class="settings-group"><h3><i class="fas fa-plug"></i> Integrations</h3>
+                    <div class="setting-row"><div class="setting-info"><h4>Slack Integration</h4><p>Send transcripts to Slack channels</p></div><div class="toggle-switch" id="slackToggle"></div></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Google Calendar</h4><p>Auto-sync meeting schedules</p></div><div class="toggle-switch active" id="calendarToggle"></div></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Notion Export</h4><p>Auto-export summaries to Notion</p></div><div class="toggle-switch" id="notionToggle"></div></div>
+                </div>
+                <div class="settings-group"><h3><i class="fas fa-credit-card"></i> Billing</h3>
+                    <div class="setting-row"><div class="setting-info"><h4>Current Plan</h4><p>Enterprise - Unlimited meetings</p></div><button class="btn-new" style="background:var(--border); color:var(--text-primary); padding:0.4rem 1rem;">Manage Plan</button></div>
+                    <div class="setting-row"><div class="setting-info"><h4>Payment Method</h4><p>Visa ending in 4242</p></div><button class="btn-new" style="background:var(--border); color:var(--text-primary); padding:0.4rem 1rem;">Update</button></div>
+                </div>
+                <div class="settings-group"><h3><i class="fas fa-shield-alt"></i> Security</h3>
+                    <div class="setting-row"><div class="setting-info"><h4>Two-Factor Authentication</h4><p>Add an extra layer of security</p></div><div class="toggle-switch" id="twoFactorToggle"></div></div>
+                    <div class="setting-row"><div class="setting-info"><h4>API Keys</h4><p>Manage your API credentials</p></div><button class="btn-new" style="background:var(--border); color:var(--text-primary); padding:0.4rem 1rem;">Generate Key</button></div>
+                </div>
+                <button class="btn-new" id="saveSettingsBtn" style="margin-top:1rem;"><span>Save Changes</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="meetingModal"><div class="modal-content"><h2>Schedule New Meeting</h2><input type="text" id="modalTitle" placeholder="Meeting title"><input type="datetime-local" id="modalDate"><select id="modalPlatform"><option>Zoom</option><option>Google Meet</option><option>Microsoft Teams</option></select><div style="display:flex; gap:1rem; justify-content:flex-end; flex-wrap:wrap;"><button class="btn-new" id="saveMeeting"><span>Schedule</span></button><button id="cancelModal" style="background:var(--border); border:none; padding:0.7rem 1.5rem; border-radius:14px; cursor:pointer;">Cancel</button></div></div></div>
+
+<script>
+    let meetings = [
+        { id: 1, title: "Product Strategy Q2", date: "2025-01-23T10:30", duration: "1h 15min", status: "completed", insights: "Key decision: Launch new features in April" },
+        { id: 2, title: "Sprint Planning", date: "2025-01-22T09:00", duration: "45min", status: "completed", insights: "Team velocity increased by 15%" },
+        { id: 3, title: "Client Demo - Enterprise", date: "2025-01-21T14:00", duration: "1h", status: "completed", insights: "Positive feedback, closing deal expected" },
+        { id: 4, title: "Team Sync", date: "2025-01-24T11:00", duration: "30min", status: "processing", insights: "Processing..." }
+    ];
+
+    let transcripts = [
+        { id: 1, title: "Product Strategy Q2", date: "2025-01-23", words: 3245, speaker: 4 },
+        { id: 2, title: "Sprint Planning", date: "2025-01-22", words: 2150, speaker: 5 },
+        { id: 3, title: "Client Demo", date: "2025-01-21", words: 4120, speaker: 3 }
+    ];
+
+    let notifications = [
+        { id: 1, title: "Meeting completed", message: "Product Strategy Q2 transcript is ready", time: "5 min ago", read: false, type: "success" },
+        { id: 2, title: "AI Insight", message: "New action items extracted from Sprint Planning", time: "1 hour ago", read: false, type: "info" },
+        { id: 3, title: "Integration update", message: "Slack integration is now active", time: "2 hours ago", read: true, type: "info" }
+    ];
+
+    let team = [
+        { name: "João Silva", role: "Owner", email: "joao@transcribeai.com", avatar: "JS" },
+        { name: "Maria Santos", role: "Admin", email: "maria@transcribeai.com", avatar: "MS" },
+        { name: "Carlos Oliveira", role: "Member", email: "carlos@transcribeai.com", avatar: "CO" }
+    ];
+
+    function updateStats() {
+        document.getElementById('totalMeetings').innerText = meetings.length;
+        const totalHours = meetings.reduce((acc, m) => { let h = parseFloat(m.duration) || 0; if(m.duration.includes('h')) h = parseFloat(m.duration.split('h')[0]); return acc + (isNaN(h) ? 0 : h); }, 0);
+        document.getElementById('totalHours').innerText = totalHours.toFixed(1);
+        document.getElementById('totalInsights').innerText = meetings.filter(m => m.status === 'completed').length * 3;
+    }
+
+    function renderMeetings() {
+        const container = document.getElementById('meetingList');
+        if(container) {
+            container.innerHTML = meetings.slice(0,3).map(m => `<div class="meeting-item"><div><strong>${m.title}</strong><br><small>${new Date(m.date).toLocaleString()}</small></div><span class="badge ${m.status}">${m.status === 'completed' ? 'Completed' : 'Processing'}</span></div>`).join('');
+        }
+        const allContainer = document.getElementById('allMeetingsList');
+        if(allContainer) {
+            allContainer.innerHTML = meetings.map(m => `<div class="meeting-item"><div><strong>${m.title}</strong><br><small>${new Date(m.date).toLocaleString()} • ${m.duration}</small></div><span class="badge ${m.status}">${m.status === 'completed' ? 'Completed' : 'Processing'}</span></div>`).join('');
+        }
+        updateStats();
+    }
+
+    function renderTranscripts() {
+        const container = document.getElementById('transcriptsList');
+        if(container) {
+            container.innerHTML = transcripts.map(t => `<div class="transcript-item"><div><strong>${t.title}</strong><br><small>${t.date} • ${t.words} words • ${t.speaker} speakers</small></div><button class="icon-btn" onclick="showToast('Opening transcript...')"><i class="fas fa-eye"></i></button></div>`).join('');
+        }
+    }
+
+    function renderInsights() {
+        const container = document.getElementById('insightsList');
+        if(container) {
+            const insights = meetings.filter(m => m.status === 'completed').map(m => `<div class="meeting-item"><div><i class="fas fa-lightbulb" style="color:var(--warning);"></i> <strong>${m.title}</strong><br><small>${m.insights}</small></div></div>`).join('');
+            container.innerHTML = insights || '<p>No insights yet. Complete more meetings!</p>';
+        }
+    }
+
+    function renderTeam() {
+        const container = document.getElementById('teamList');
+        if(container) {
+            container.innerHTML = team.map(t => `<div class="meeting-item"><div style="display:flex; align-items:center; gap:12px; min-width:0;"><div class="user-avatar" style="width:40px; height:40px;">${t.avatar}</div><div style="min-width:0;"><strong>${t.name}</strong><br><small>${t.role} • ${t.email}</small></div></div><button class="icon-btn"><i class="fas fa-envelope"></i></button></div>`).join('');
+        }
+    }
+
+    function renderNotifications(filter = 'all') {
+        const filtered = filter === 'all' ? notifications : notifications.filter(n => !n.read);
+        const container = document.getElementById('notificationList');
+        if(container) {
+            container.innerHTML = filtered.map(n => `<div class="notification-item ${!n.read ? 'unread' : ''}" data-id="${n.id}"><div class="notification-icon" style="background:${n.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)'}"><i class="fas ${n.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}" style="color:${n.type === 'success' ? '#10b981' : '#3b82f6'}"></i></div><div class="notification-content"><div class="notification-title">${n.title}</div><div>${n.message}</div><div class="notification-time">${n.time}</div></div></div>`).join('');
+            document.querySelectorAll('.notification-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = parseInt(el.dataset.id);
+                    const notif = notifications.find(n => n.id === id);
+                    if(notif) notif.read = true;
+                    renderNotifications('all');
+                    document.getElementById('notificationCount').innerText = notifications.filter(n => !n.read).length;
+                    showToast(`📬 ${notif.title}`);
+                });
+            });
+        }
+        document.getElementById('notificationCount').innerText = notifications.filter(n => !n.read).length;
+    }
+
+    document.getElementById('clearAllNotif')?.addEventListener('click', () => {
+        notifications.forEach(n => n.read = true);
+        renderNotifications('all');
+        showToast('All notifications cleared');
+    });
+
+    document.querySelectorAll('.notification-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.notification-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderNotifications(tab.dataset.notifTab);
+        });
+    });
+
+    let meetingsChartInstance, hoursChartInstance;
+
+    function initCharts() {
+        meetingsChartInstance = new Chart(document.getElementById('meetingsChart'), { type: 'line', data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], datasets: [{ label: 'Meetings', data: [8, 12, 10, 15], borderColor: '#5B3B8C', backgroundColor: 'rgba(91,59,140,0.1)', tension: 0.3, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
+        hoursChartInstance = new Chart(document.getElementById('hoursChart'), { type: 'bar', data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], datasets: [{ label: 'Hours', data: [12, 18, 15, 22], backgroundColor: '#8B5CF6', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false } });
+    }
+
+    function showToast(msg) { const toast = document.createElement('div'); toast.className = 'toast'; toast.innerHTML = `<i class="fas fa-check-circle" style="color:#5B3B8C; margin-right:10px;"></i>${msg}`; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+
+    // Tab Navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            const tab = link.dataset.tab;
+            document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${tab}Panel`).classList.add('active');
+            const titles = { dashboard: 'Dashboard', meetings: 'Meetings', transcripts: 'Transcripts', insights: 'AI Insights', team: 'Team', settings: 'Settings' };
+            document.getElementById('pageTitle').innerText = titles[tab] || 'Dashboard';
+            document.getElementById('pageSubtitle').innerText = tab === 'dashboard' ? 'Welcome back! Your AI meeting assistant' : `Manage your ${titles[tab]}`;
+            if(tab === 'transcripts') renderTranscripts();
+            if(tab === 'insights') renderInsights();
+            if(tab === 'team') renderTeam();
+
+            // No mobile, fecha o menu automaticamente ao escolher uma seção
+            if (window.innerWidth <= 768) closeMobileMenu();
+        });
+    });
+
+    // Theme Toggle
+    let darkMode = false;
+    try { darkMode = localStorage.getItem('darkMode') === 'true'; } catch (e) { /* localStorage indisponível (ex.: iframe sandboxed) */ }
+    if(darkMode) document.body.classList.add('dark');
+    document.getElementById('themeToggle').onclick = () => {
+        darkMode = !darkMode;
+        document.body.classList.toggle('dark', darkMode);
+        try { localStorage.setItem('darkMode', darkMode); } catch (e) { /* ignora se não houver storage disponível */ }
+        showToast(darkMode ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
+    };
+
+    // Sidebar Collapse (desktop/tablet) + Off-canvas (mobile)
+    const sidebarEl = document.getElementById('sidebar');
+    const mainContentEl = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    let collapsed = false;
+
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function openMobileMenu() {
+        sidebarEl.classList.add('mobile-open');
+        sidebarOverlay.classList.add('show');
+    }
+
+    function closeMobileMenu() {
+        sidebarEl.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('show');
+    }
+
+    document.getElementById('collapseBtn').onclick = () => {
+        if (isMobile()) {
+            closeMobileMenu();
+            return;
+        }
+        collapsed = !collapsed;
+        sidebarEl.classList.toggle('collapsed', collapsed);
+        mainContentEl.classList.toggle('expanded', collapsed);
+    };
+
+    document.getElementById('menuToggle').onclick = () => {
+        if (sidebarEl.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    };
+
+    sidebarOverlay.addEventListener('click', closeMobileMenu);
+
+    window.addEventListener('resize', () => {
+        if (!isMobile()) closeMobileMenu();
+    });
+
+    // Notification Dropdown
+    document.getElementById('notificationBtn').onclick = (e) => {
+        e.stopPropagation();
+        renderNotifications('all');
+        document.getElementById('notificationDropdown').classList.toggle('show');
+    };
+    document.addEventListener('click', () => document.getElementById('notificationDropdown').classList.remove('show'));
+
+    // Modal
+    const modal = document.getElementById('meetingModal');
+    document.getElementById('newMeetingBtn').onclick = () => modal.classList.add('active');
+    document.getElementById('cancelModal').onclick = () => modal.classList.remove('active');
+    document.getElementById('saveMeeting').onclick = () => {
+        const title = document.getElementById('modalTitle').value;
+        if(!title) { showToast('Please enter a title'); return; }
+        const newMeeting = { id: meetings.length + 1, title, date: new Date().toISOString().slice(0,16), duration: "0min", status: "processing", insights: "Processing..." };
+        meetings.unshift(newMeeting);
+        renderMeetings();
+        modal.classList.remove('active');
+        document.getElementById('modalTitle').value = '';
+        showToast(`🎙️ "${title}" scheduled! AI is processing...`);
+        setTimeout(() => {
+            newMeeting.status = "completed";
+            newMeeting.insights = `AI insights for "${title}" are ready`;
+            renderMeetings();
+            notifications.unshift({ id: notifications.length+1, title: "Meeting Ready", message: `Transcript for "${title}" is now available`, time: "Just now", read: false, type: "success" });
+            renderNotifications('all');
+            showToast(`✨ "${title}" - Transcript and insights ready!`);
+        }, 4000);
+    };
+
+    // Settings toggles
+    const toggles = document.querySelectorAll('.toggle-switch');
+    toggles.forEach(toggle => {
+        toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+    });
+
+    document.getElementById('saveSettingsBtn')?.addEventListener('click', () => showToast('✅ Settings saved successfully!'));
+    document.getElementById('inviteBtn')?.addEventListener('click', () => showToast('📧 Invitation sent to team member!'));
+    document.getElementById('exportAllBtn')?.addEventListener('click', () => showToast('📊 Exporting all meetings as CSV...'));
+    document.getElementById('searchTranscript')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = transcripts.filter(t => t.title.toLowerCase().includes(term));
+        document.getElementById('transcriptsList').innerHTML = filtered.map(t => `<div class="transcript-item"><div><strong>${t.title}</strong><br><small>${t.date} • ${t.words} words</small></div><button class="icon-btn"><i class="fas fa-eye"></i></button></div>`).join('');
+    });
+
+    renderMeetings();
+    renderTranscripts();
+    renderInsights();
+    renderTeam();
+    initCharts();
+</script>
+</body>
+</html>
