@@ -793,15 +793,9 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+<script src="assets/js/supabaseClient.js"></script>
 <script>
-    // =========================
-    // SUPABASE CLIENT
-    // =========================
-    window.supabaseClient = window.supabase.createClient(
-      "https://zfmsjtijkxewrzzvrthc.supabase.co",
-      "SUA-ANON-KEY"
-    );
 
     // =========================
     // PLANOS E FEATURES
@@ -990,7 +984,14 @@
                 return;
             }
 
-            if (data.token) localStorage.setItem('token', data.token);
+            // projeto exige confirmação de e-mail: só entra depois de confirmar
+            if (data.confirmacaoPendente || !data.token) {
+                showToast(data.mensagem || '📧 Confirme seu e-mail para entrar.');
+                setTimeout(() => window.location.replace('/login.html'), 4000);
+                return;
+            }
+
+            localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user || data));
 
             showToast('🎉 Conta criada com sucesso!');

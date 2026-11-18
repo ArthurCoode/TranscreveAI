@@ -12,9 +12,14 @@ export default async function handler(req, res) {
 
   if (!limitar(req, res, { chave: `register:${ipDaReq(req)}`, limite: 5, janelaMs: 60 * 60 * 1000 })) return;
 
-  const nome = typeof req.body?.nome === 'string' ? req.body.nome.replace(/[<>]/g, '').trim().slice(0, 80) : '';
-  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-  const senha = typeof req.body?.senha === 'string' ? req.body.senha : '';
+  // aceita os dois formatos: a página register.html envia name/password,
+  // outros clientes (ex: extensão) usam nome/senha
+  const body = req.body || {};
+  const nomeBruto = typeof body.nome === 'string' ? body.nome : body.name;
+  const senhaBruta = typeof body.senha === 'string' ? body.senha : body.password;
+  const nome = typeof nomeBruto === 'string' ? nomeBruto.replace(/[<>]/g, '').trim().slice(0, 80) : '';
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const senha = typeof senhaBruta === 'string' ? senhaBruta : '';
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios.' });
@@ -33,7 +38,18 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3. Gera JWT próprio (igual login)
+    // 2. Sem sessão = o projeto exige confirmação de e-mail. Nesse caso NÃO
+    //    entregamos token: antes, qualquer pessoa podia se cadastrar com o
+    //    e-mail de outra e usar o sistema sem nunca provar que é dona dele.
+    if (!data.session) {
+      return res.status(201).json({
+        ok: true,
+        confirmacaoPendente: true,
+        mensagem: 'Conta criada! Enviamos um link de confirmação para o seu e-mail. Confirme para poder entrar.'
+      });
+    }
+
+    // 3. Confirmação automática habilitada: já entra logado (igual login)
     const token = gerarToken({
       id: data.user.id,
       email,
